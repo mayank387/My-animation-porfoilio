@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { UploadCloud } from 'lucide-react';
 import Navbar from './components/layout/Navbar';
 import Hero from './components/sections/Hero';
@@ -9,11 +9,12 @@ import Pipeline from './components/sections/Pipeline';
 import TechStack from './components/sections/TechStack';
 import Contact from './components/sections/Contact';
 import Footer from './components/layout/Footer';
-import VideoModal from './components/ui/VideoModal';
 
-// Admin & Cloud Database Imports
-import AdminLogin from './components/admin/AdminLogin';
-import AdminDashboard from './components/admin/AdminDashboard';
+// Code-split heavy interactive modals and admin portal to keep initial mobile bundle ultra-light
+const VideoModal = lazy(() => import('./components/ui/VideoModal'));
+const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
+const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
+
 import { getProjects, getIntroVideo, getAdminSession, onAuthStateChange } from './lib/supabase';
 
 export default function App() {
@@ -165,25 +166,25 @@ export default function App() {
   // SECURE ADMIN ROUTE VIEW (/admin)
   // -------------------------------------------------------------
   if (isAdminView) {
-    if (!adminUser) {
-      return (
-        <AdminLogin
-          onLoginSuccess={handleLoginSuccess}
-          onBackToPortfolio={handleBackToPortfolio}
-        />
-      );
-    }
-
     return (
-      <AdminDashboard
-        user={adminUser}
-        onBackToPortfolio={handleBackToPortfolio}
-        onLogout={handleLogout}
-        onProjectsUpdated={() => {
-          loadPublicProjects();
-          loadIntroShowreel();
-        }}
-      />
+      <Suspense fallback={<div className="min-h-screen bg-studio-bg flex items-center justify-center text-xs font-mono text-slate-400">Loading Studio Admin...</div>}>
+        {!adminUser ? (
+          <AdminLogin
+            onLoginSuccess={handleLoginSuccess}
+            onBackToPortfolio={handleBackToPortfolio}
+          />
+        ) : (
+          <AdminDashboard
+            user={adminUser}
+            onBackToPortfolio={handleBackToPortfolio}
+            onLogout={handleLogout}
+            onProjectsUpdated={() => {
+              loadPublicProjects();
+              loadIntroShowreel();
+            }}
+          />
+        )}
+      </Suspense>
     );
   }
 
@@ -224,6 +225,7 @@ export default function App() {
         onClick={navigateToAdmin}
         className="fixed bottom-6 right-6 z-40 px-4 py-2.5 rounded-full bg-studio-surface/90 hover:bg-electric-indigo border border-white/15 hover:border-transparent text-white text-xs font-sans font-semibold backdrop-blur-xl shadow-2xl transition-all duration-300 flex items-center gap-2 group transform hover:-translate-y-1 cursor-pointer"
         title="Open Admin Upload & Studio CMS (Shortcut: Ctrl + Shift + A)"
+        aria-label="Open Admin Upload and Studio CMS"
       >
         <UploadCloud className="w-4 h-4 text-electric-blue group-hover:text-white transition-colors" />
         <span className="hidden sm:inline">Upload / Studio CMS</span>
@@ -233,14 +235,18 @@ export default function App() {
       {/* Footer */}
       <Footer onOpenAdmin={navigateToAdmin} />
 
-      {/* Theater Video Modal with Playlist Navigation & Full Controls */}
-      <VideoModal
-        project={selectedProject}
-        projects={projectsList}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSelectProject={handleSelectProject}
-      />
+      {/* Theater Video Modal with Playlist Navigation & Full Controls (Lazy loaded on demand) */}
+      {isModalOpen && (
+        <Suspense fallback={null}>
+          <VideoModal
+            project={selectedProject}
+            projects={projectsList}
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+            onSelectProject={handleSelectProject}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

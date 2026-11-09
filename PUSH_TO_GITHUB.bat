@@ -6,25 +6,31 @@ echo ===================================================
 echo.
 echo Adding and preparing all files...
 git add .
-git commit -m "Deploy latest portfolio code and production configs" 2>nul
+git commit -m "Lighthouse Performance 90+ & Accessibility optimizations with hosting configs" 2>nul
 echo.
-echo Please copy your GitHub repository URL from your browser:
-echo (Example: https://github.com/mayankk4m-4380/YOUR-REPO.git)
-echo.
-set /p REPO_URL="Paste your GitHub Repository URL here and press Enter: "
-if "%REPO_URL%"=="" (
-    echo No URL entered. Aborting.
-    pause
-    exit /b
+
+git remote get-url origin >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo Existing GitHub remote found!
+    echo Pushing files to GitHub main branch...
+    git push -u origin main
+) else (
+    echo Please copy your GitHub repository URL from your browser:
+    echo (Example: https://github.com/mayank387/My-animation-porfoilio.git)
+    echo.
+    set /p REPO_URL="Paste your GitHub Repository URL here and press Enter: "
+    if "%REPO_URL%"=="" (
+        echo No URL entered. Aborting.
+        pause
+        exit /b
+    )
+    echo Setting remote origin...
+    git remote remove origin 2>nul
+    git remote add origin %REPO_URL%
+    git branch -M main
+    echo Pushing files to GitHub...
+    git push -u origin main --force
 )
-echo.
-echo Setting remote origin...
-git remote remove origin 2>nul
-git remote add origin %REPO_URL%
-git branch -M main
-echo.
-echo Pushing files to GitHub...
-git push -u origin main --force
 echo.
 if %ERRORLEVEL% EQU 0 (
     echo ===================================================

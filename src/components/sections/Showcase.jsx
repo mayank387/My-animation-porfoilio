@@ -65,6 +65,8 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
                   <button
                     key={cat.id}
                     onClick={() => setActiveCategory(cat.id)}
+                    aria-pressed={isActive}
+                    aria-label={`Filter portfolio by ${cat.label} (${count} projects)`}
                     className={`px-4 py-2.5 rounded-xl text-xs font-sans transition-all duration-300 flex items-center gap-2 cursor-pointer ${
                       isActive
                         ? 'bg-gradient-to-r from-electric-indigo to-electric-blue text-white shadow-electric-glow font-semibold border-transparent'
@@ -85,6 +87,7 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
               <button
                 type="button"
                 onClick={onOpenAdmin}
+                aria-label="Upload New Reel to Portfolio"
                 className="px-4 py-2.5 rounded-xl text-xs font-sans font-semibold bg-white/[0.06] hover:bg-electric-indigo text-white border border-white/10 hover:border-transparent transition-all flex items-center gap-2 cursor-pointer shadow-md group ml-auto sm:ml-0"
                 title="Upload New Reel to Portfolio"
               >

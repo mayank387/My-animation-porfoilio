@@ -49,13 +49,16 @@ export default function CinematicBackground() {
         if (p.x < 0) p.x = width;
         if (p.x > width) p.x = 0;
 
+        // Render particle with soft luminous aura (high performance, no shadowBlur overhead)
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
+        ctx.fillStyle = `${p.color} ${p.alpha * 0.25})`;
+        ctx.fill();
+
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fillStyle = `${p.color} ${p.alpha})`;
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = 'rgba(99, 102, 241, 0.4)';
         ctx.fill();
-        ctx.shadowBlur = 0;
       }
 
       animationFrameId = requestAnimationFrame(render);

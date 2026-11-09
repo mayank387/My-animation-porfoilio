@@ -234,8 +234,10 @@ export default function Contact() {
                 {/* Name & Email Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-mono text-slate-300 block mb-1.5">Your Name / Company</label>
+                    <label htmlFor="contact-name" className="text-xs font-mono text-slate-300 block mb-1.5">Your Name / Company</label>
                     <input
+                      id="contact-name"
+                      name="clientName"
                       type="text"
                       required
                       placeholder="e.g. Alex Morgan"
@@ -245,8 +247,10 @@ export default function Contact() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-mono text-slate-300 block mb-1.5">Your Email</label>
+                    <label htmlFor="contact-email" className="text-xs font-mono text-slate-300 block mb-1.5">Your Email</label>
                     <input
+                      id="contact-email"
+                      name="clientEmail"
                       type="email"
                       required
                       placeholder="name@company.com"
@@ -259,8 +263,10 @@ export default function Contact() {
 
                 {/* Service Selection */}
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1.5">Interested Service</label>
+                  <label htmlFor="contact-service" className="text-xs font-mono text-slate-300 block mb-1.5">Interested Service</label>
                   <select
+                    id="contact-service"
+                    name="projectType"
                     value={projectType}
                     onChange={(e) => setProjectType(e.target.value)}
                     className="w-full bg-studio-surface border border-white/10 rounded-xl px-4 py-3 text-xs text-white font-mono focus:outline-none focus:border-electric-indigo cursor-pointer"
@@ -276,8 +282,10 @@ export default function Contact() {
 
                 {/* Project Details */}
                 <div>
-                  <label className="text-xs font-mono text-slate-300 block mb-1.5">Project Brief or Idea</label>
+                  <label htmlFor="contact-message" className="text-xs font-mono text-slate-300 block mb-1.5">Project Brief or Idea</label>
                   <textarea
+                    id="contact-message"
+                    name="projectMessage"
                     rows={4}
                     required
                     placeholder="Tell me about your product, visual references, timeline expectations..."

@@ -130,6 +130,7 @@ export default function Services() {
                   href={contraConfig.profileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`Book ${service.title} service on Contra`}
                   className="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-electric-blue hover:text-white transition-colors flex-shrink-0 group/link cursor-pointer"
                 >
                   <span>Book on Contra</span>

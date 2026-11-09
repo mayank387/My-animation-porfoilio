@@ -125,10 +125,19 @@ export default function VideoCard({ project, onSelect }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      role="button"
+      tabIndex={0}
+      aria-label={`View project details and video for ${project.title}`}
       onClick={() => onSelect(project)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(project);
+        }
+      }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className="group relative rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer bg-studio-card border border-white/[0.08] hover:border-electric-indigo/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_50px_-10px_rgba(99,102,241,0.3)] flex flex-col"
+      className="group relative rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer bg-studio-card border border-white/[0.08] hover:border-electric-indigo/50 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_50px_-10px_rgba(99,102,241,0.3)] flex flex-col focus:outline-none focus:ring-2 focus:ring-electric-indigo/60"
     >
       {/* Media Container: Standardized 16:9 Thumbnail Dimensions for 2-Column Row Alignment */}
       <div className="relative w-full aspect-video overflow-hidden bg-black flex items-center justify-center">
@@ -188,7 +197,7 @@ export default function VideoCard({ project, onSelect }) {
               muted
               loop
               playsInline
-              preload="auto"
+              preload="none"
               onLoadedMetadata={() => {
                 if (activeVideoId === project.id && videoRef.current) {
                   videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});

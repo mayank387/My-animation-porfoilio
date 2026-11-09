@@ -86,6 +86,7 @@ export default function Footer({ onOpenAdmin }) {
                 href={contraConfig.profileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Hire Mayank on Contra for 3D Video Production"
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white text-xs font-sans font-semibold shadow-electric-glow hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-white" />
@@ -98,6 +99,7 @@ export default function Footer({ onOpenAdmin }) {
                 href={contraConfig.profileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="View Mayank's Contra Freelance Portfolio"
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-white text-xs font-sans font-semibold border border-white/10 hover:border-electric-blue/40 transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
               >
                 <Briefcase className="w-3.5 h-3.5 text-electric-blue" />
@@ -109,6 +111,7 @@ export default function Footer({ onOpenAdmin }) {
               <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 text-xs font-sans text-slate-300 transition-colors">
                 <a
                   href={`mailto:${contraConfig.email}`}
+                  aria-label={`Send project email to ${contraConfig.email}`}
                   className="flex items-center gap-2 truncate text-slate-300 hover:text-white transition-colors group font-normal"
                   title="Send email to mayankk3n@gmail.com"
                 >
@@ -139,26 +142,28 @@ export default function Footer({ onOpenAdmin }) {
 
         {/* Official Channels Row */}
         <div className="py-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.06] text-xs font-sans">
-          <span className="text-slate-500 font-medium">Official Channels:</span>
+          <span className="text-slate-400 font-medium">Official Channels:</span>
           <div className="flex flex-wrap items-center gap-6">
             <a
               href={contraConfig.profileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 group font-medium"
+              aria-label="Mayank's official Contra profile"
+              className="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group font-medium"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>Contra: Mayankk4rn</span>
-              <ArrowUpRight className="w-3 h-3 text-slate-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
 
             <a
               href={`mailto:${contraConfig.email}`}
-              className="text-slate-400 hover:text-white transition-colors flex items-center gap-1.5 group font-medium"
+              aria-label={`Send email to ${contraConfig.email}`}
+              className="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group font-medium"
             >
               <Mail className="w-3.5 h-3.5 text-electric-blue" />
               <span>{contraConfig.email}</span>
-              <ArrowUpRight className="w-3 h-3 text-slate-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
           </div>
         </div>
@@ -171,12 +176,13 @@ export default function Footer({ onOpenAdmin }) {
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center sm:justify-end">
             <span>Client Contracts via Contra Escrow</span>
             <span>•</span>
-            <span className="text-slate-400">4K Master Delivery</span>
+            <span className="text-slate-300">4K Master Delivery</span>
             <span>•</span>
             <button
               type="button"
               onClick={onOpenAdmin || (() => { window.location.pathname = '/admin'; })}
-              className="text-slate-500 hover:text-electric-blue transition-colors flex items-center gap-1 cursor-pointer font-medium"
+              aria-label="Open Admin and Studio CMS Portal"
+              className="text-slate-400 hover:text-electric-blue transition-colors flex items-center gap-1 cursor-pointer font-medium"
               title="Admin Portal (or press Ctrl + Shift + A)"
             >
               <span>Admin</span>

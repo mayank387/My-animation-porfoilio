@@ -70,6 +70,7 @@ export default function About() {
               href={contraConfig.profileUrl}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Hire Mayank on Contra for AI and 3D Video Production"
               className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-xs font-semibold font-sans bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white shadow-electric-glow hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all transform hover:-translate-y-0.5 cursor-pointer"
             >
               <ShieldCheck className="w-4 h-4" />

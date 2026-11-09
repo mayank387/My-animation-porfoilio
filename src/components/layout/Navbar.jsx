@@ -35,7 +35,7 @@ export default function Navbar({ onOpenAdmin }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         
         {/* Brand / Logo */}
-        <a href="#" className="flex items-center gap-3 group">
+        <a href="#" aria-label="Mayank Studio - Creative Director & 3D Video Producer Homepage" className="flex items-center gap-3 group">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-electric-indigo to-electric-blue flex items-center justify-center p-[1px] shadow-[0_0_20px_rgba(99,102,241,0.3)] group-hover:shadow-[0_0_25px_rgba(56,189,248,0.5)] transition-all">
             <div className="w-full h-full bg-studio-surface rounded-[11px] flex items-center justify-center">
               <Film className="w-4 h-4 text-electric-blue group-hover:scale-110 transition-transform" />
@@ -79,6 +79,7 @@ export default function Navbar({ onOpenAdmin }) {
           <button
             type="button"
             onClick={onOpenAdmin}
+            aria-label="Upload Videos and Open Studio CMS"
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-electric-indigo/50 transition-all cursor-pointer shadow-sm group"
             title="Upload Videos & Manage Studio CMS"
           >
@@ -105,6 +106,7 @@ export default function Navbar({ onOpenAdmin }) {
           <button
             type="button"
             onClick={onOpenAdmin}
+            aria-label="Upload Videos and Open Studio CMS"
             className="px-2.5 py-1.5 rounded-lg text-xs font-semibold font-sans bg-white/[0.08] hover:bg-white/[0.15] text-white border border-white/15 flex items-center gap-1 cursor-pointer"
             title="Upload Videos"
           >
@@ -116,6 +118,7 @@ export default function Navbar({ onOpenAdmin }) {
             href={contraConfig.profileUrl}
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="View Mayank's Profile and Hire on Contra"
             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-electric-indigo text-white flex items-center gap-1"
           >
             <span>Contra</span>
@@ -126,6 +129,7 @@ export default function Navbar({ onOpenAdmin }) {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
             aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>

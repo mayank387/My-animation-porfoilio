@@ -211,11 +211,11 @@ export default function Hero({
               </div>
             </motion.div>
 
-            {/* Main Editorial Studio Headline */}
+            {/* Main Editorial Studio Headline (Eager rendered for instant LCP) */}
             <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
+              initial={{ y: 15 }}
+              animate={{ y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
               className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-heading font-extrabold tracking-[-0.03em] text-white leading-[1.08]"
             >
               Bringing Ideas to Life{' '}
@@ -257,6 +257,7 @@ export default function Hero({
               <button
                 type="button"
                 onClick={handleScrollToShowcase}
+                aria-label="Explore My Work"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-white/30 backdrop-blur-md transition-all shadow-lg group cursor-pointer"
               >
                 <Play className="w-4 h-4 text-electric-blue fill-current group-hover:scale-110 transition-transform" />
@@ -269,6 +270,7 @@ export default function Hero({
                 href={contraConfig.profileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Hire Mayank on Contra"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white shadow-electric-glow hover:shadow-[0_0_35px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
               >
                 <ShieldCheck className="w-4 h-4" />
@@ -280,6 +282,7 @@ export default function Hero({
               <button
                 type="button"
                 onClick={onOpenAdminUpload}
+                aria-label="Upload Work to Studio CMS"
                 className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-electric-indigo/50 backdrop-blur-md transition-all shadow-md group cursor-pointer"
                 title="Upload Videos & Manage Portfolio"
               >
@@ -310,11 +313,14 @@ export default function Hero({
               {hasVideo ? (
                 /* Real Uploaded Intro Video Display */
                 <>
-                  {/* Poster Thumbnail (visible during initial buffer, fades out smoothly once playing) */}
+                  {/* Poster Thumbnail (High priority LCP optimization) */}
                   {introPoster && !posterError && (
                     <img
                       src={introPoster}
-                      alt="Intro showreel poster"
+                      alt="Director Showreel Intro Poster"
+                      fetchPriority="high"
+                      loading="eager"
+                      decoding="async"
                       onError={() => setPosterError(true)}
                       className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 pointer-events-none z-10 ${
                         isPlaying ? 'opacity-0' : 'opacity-100'
@@ -370,6 +376,7 @@ export default function Hero({
                         onClick={onOpenAdminUpload}
                         className="pointer-events-auto px-3 py-1.5 rounded-full text-xs font-mono font-medium tracking-wide bg-black/80 hover:bg-electric-indigo text-white border border-white/15 backdrop-blur-md transition-colors flex items-center gap-1.5 cursor-pointer shadow-lg"
                         title="Upload or Change Intro Showreel"
+                        aria-label="Manage Intro Showreel"
                       >
                         <UploadCloud className="w-3.5 h-3.5 text-electric-blue" />
                         <span className="hidden sm:inline">Manage Showreel</span>
@@ -397,7 +404,7 @@ export default function Hero({
                       type="button"
                       onClick={togglePlay}
                       className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-black/70 hover:bg-electric-indigo backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all transform hover:scale-110 shadow-2xl cursor-pointer z-20"
-                      aria-label="Play video"
+                      aria-label="Play introduction video"
                     >
                       <Play className="w-7 h-7 fill-white ml-0.5" />
                     </button>
@@ -409,8 +416,21 @@ export default function Hero({
                   }`}>
                     {/* Scrubber Bar */}
                     <div
+                      role="slider"
+                      tabIndex={0}
+                      aria-label="Video timeline scrubber"
+                      aria-valuenow={Math.round(progress)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
                       onClick={handleSeek}
-                      className="w-full h-1.5 bg-white/20 hover:h-2.5 rounded-full cursor-pointer mb-2.5 relative overflow-hidden transition-all"
+                      onKeyDown={(e) => {
+                        if (e.key === 'ArrowRight' && videoRef.current) {
+                          videoRef.current.currentTime = Math.min((videoRef.current.duration || 0), videoRef.current.currentTime + 5);
+                        } else if (e.key === 'ArrowLeft' && videoRef.current) {
+                          videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 5);
+                        }
+                      }}
+                      className="w-full h-1.5 bg-white/20 hover:h-2.5 rounded-full cursor-pointer mb-2.5 relative overflow-hidden transition-all focus:outline-none focus:ring-1 focus:ring-electric-blue"
                     >
                       <div
                         className="h-full bg-gradient-to-r from-electric-blue to-electric-indigo rounded-full"
@@ -423,6 +443,7 @@ export default function Hero({
                         <button
                           type="button"
                           onClick={togglePlay}
+                          aria-label={isPlaying ? 'Pause video' : 'Play video'}
                           className="hover:text-white transition-colors cursor-pointer font-medium"
                         >
                           {isPlaying ? 'Pause' : 'Play'}
@@ -431,6 +452,7 @@ export default function Hero({
                         <button
                           type="button"
                           onClick={toggleMute}
+                          aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
                           className="hover:text-white transition-colors cursor-pointer font-medium"
                         >
                           {isMuted ? 'Unmute Audio' : 'Sound On'}
