@@ -113,7 +113,7 @@ export default function AdminIntroVideoModal({
                 canvas.height = video.videoHeight || 720;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.9);
+                canvas.toBlob((blob) => resolve(blob), 'image/webp', 0.85);
               } catch {
                 resolve(null);
               }
@@ -126,7 +126,7 @@ export default function AdminIntroVideoModal({
             const mins = Math.floor(t / 60);
             const secs = Math.floor(t % 60);
             const label = `${mins}:${secs.toString().padStart(2, '0')}`;
-            const autoFile = new File([frameBlob], `showreel_frame_${label.replace(':', '_')}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            const autoFile = new File([frameBlob], `showreel_frame_${label.replace(':', '_')}_${Date.now()}.webp`, { type: 'image/webp' });
             const frameUrl = createSafeObjectUrl(autoFile);
             extracted.push({ url: frameUrl, file: autoFile, label });
           }
@@ -173,14 +173,14 @@ export default function AdminIntroVideoModal({
         const mins = Math.floor(curTime / 60);
         const secs = Math.floor(curTime % 60);
         const label = `${mins}:${secs.toString().padStart(2, '0')}`;
-        const autoFile = new File([blob], `captured_showreel_${label.replace(':', '_')}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+        const autoFile = new File([blob], `captured_showreel_${label.replace(':', '_')}_${Date.now()}.webp`, { type: 'image/webp' });
         const frameUrl = createSafeObjectUrl(autoFile);
 
         setThumbnailFile(autoFile);
         setPreviewThumbSrc(frameUrl);
         setThumbError('');
         setAutoThumbnails((prev) => [{ url: frameUrl, file: autoFile, label: `Capture (${label})` }, ...prev]);
-      }, 'image/jpeg', 0.92);
+      }, 'image/webp', 0.85);
     } catch (e) {
       console.warn('Could not capture frame:', e);
     }

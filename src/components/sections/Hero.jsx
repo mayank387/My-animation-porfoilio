@@ -6,6 +6,7 @@ import {
   ChevronDown, Tv
 } from 'lucide-react';
 import { contraConfig } from '../../data/contraConfig';
+import { getOptimizedThumbnail, THUMBNAIL_DIMENSIONS } from '../../utils/imageOptimization';
 import CinematicBackground from '../ui/CinematicBackground';
 
 export default function Hero({ 
@@ -25,7 +26,8 @@ export default function Hero({
   const [posterError, setPosterError] = useState(false);
 
   const hasVideo = Boolean(introVideo?.videoUrl);
-  const introPoster = introVideo?.thumbnailUrl || introVideo?.thumbnail || '';
+  const rawPoster = introVideo?.thumbnailUrl || introVideo?.thumbnail || '';
+  const introPoster = getOptimizedThumbnail(rawPoster, introVideo?.id || 'creator-intro-showreel');
 
   // 1. Instant Muted Autoplay on Mount & When Video URL is Available
   useEffect(() => {
@@ -313,19 +315,24 @@ export default function Hero({
               {hasVideo ? (
                 /* Real Uploaded Intro Video Display */
                 <>
-                  {/* Poster Thumbnail (High priority LCP optimization) */}
+                  {/* Poster Thumbnail (High priority LCP optimization - WebP with fallback) */}
                   {introPoster && !posterError && (
-                    <img
-                      src={introPoster}
-                      alt="Director Showreel Intro Poster"
-                      fetchPriority="high"
-                      loading="eager"
-                      decoding="async"
-                      onError={() => setPosterError(true)}
-                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 pointer-events-none z-10 ${
-                        isPlaying ? 'opacity-0' : 'opacity-100'
-                      }`}
-                    />
+                    <picture className={`absolute inset-0 w-full h-full pointer-events-none z-10 transition-opacity duration-700 ${
+                      isPlaying ? 'opacity-0' : 'opacity-100'
+                    }`}>
+                      <source srcSet="/thumbnails/intro_showreel_poster.webp" type="image/webp" />
+                      <img
+                        src={introPoster}
+                        alt="Director Showreel Intro Poster"
+                        width={THUMBNAIL_DIMENSIONS.width}
+                        height={THUMBNAIL_DIMENSIONS.height}
+                        fetchPriority="high"
+                        loading="eager"
+                        decoding="async"
+                        onError={() => setPosterError(true)}
+                        className="w-full h-full object-cover"
+                      />
+                    </picture>
                   )}
 
                   {/* HTML5 Video Player */}
@@ -333,6 +340,8 @@ export default function Hero({
                     ref={videoRef}
                     src={introVideo.videoUrl}
                     poster={!posterError ? introPoster : undefined}
+                    width={THUMBNAIL_DIMENSIONS.width}
+                    height={THUMBNAIL_DIMENSIONS.height}
                     autoPlay
                     muted={isMuted}
                     playsInline

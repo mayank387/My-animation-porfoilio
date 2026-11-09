@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Play, ExternalLink, Clock, Film } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Badge from './Badge';
+import { getOptimizedThumbnail, THUMBNAIL_DIMENSIONS } from '../../utils/imageOptimization';
 
 // Singleton coordinator to optimize performance:
 // Ensures only the most visible video autoplays at any time.
@@ -28,6 +29,7 @@ export default function VideoCard({ project, onSelect }) {
 
   const isVertical = project.aspectRatio === "9:16";
   const isFourThree = project.aspectRatio === "4:3";
+  const optimizedThumbnail = getOptimizedThumbnail(project.thumbnail, project.id);
 
   // IntersectionObserver for automatic autoplay & pause when visible in viewport
   useEffect(() => {
@@ -149,13 +151,11 @@ export default function VideoCard({ project, onSelect }) {
           </div>
         )}
 
-        {/* Ambient Blurred Backdrop for Vertical 9:16 / 4:3 Media */}
-        {(isVertical || isFourThree) && project.thumbnail && (
-          <img
-            src={project.thumbnail}
-            alt=""
+        {/* Ambient Studio Lighting Backdrop for Vertical 9:16 / 4:3 Media (CSS-driven - zero duplicate image downloads) */}
+        {(isVertical || isFourThree) && (
+          <div
             aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-40 scale-125 pointer-events-none"
+            className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-electric-indigo/20 via-studio-surface/80 to-black z-[1]"
           />
         )}
 
@@ -163,15 +163,23 @@ export default function VideoCard({ project, onSelect }) {
         {project.thumbnail && !imageError ? (
           <div className={`w-full h-full flex items-center justify-center relative z-[2] ${isVertical ? 'py-2' : ''}`}>
             <img
-              src={project.thumbnail}
+              src={optimizedThumbnail}
               alt={project.title}
+              width={THUMBNAIL_DIMENSIONS.width}
+              height={THUMBNAIL_DIMENSIONS.height}
               loading="lazy"
               decoding="async"
               onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
+              onError={(e) => {
+                if (e.currentTarget.src !== project.thumbnail && project.thumbnail) {
+                  e.currentTarget.src = project.thumbnail;
+                } else {
+                  setImageError(true);
+                }
+              }}
               className={`transition-all duration-700 ease-out group-hover:scale-105 ${
                 isVertical 
-                  ? 'h-full aspect-[9/16] object-cover rounded-xl shadow-2xl border border-white/15' 
+                  ? 'h-full aspect-[9/16] object-cover rounded-xl shadow-[0_0_40px_rgba(99,102,241,0.25),0_15px_30px_rgba(0,0,0,0.8)] border border-white/15' 
                   : 'w-full h-full object-cover'
               } ${imageLoaded ? 'opacity-100' : 'opacity-0'} ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
             />
@@ -193,7 +201,9 @@ export default function VideoCard({ project, onSelect }) {
             <video
               ref={videoRef}
               src={project.videoUrl}
-              poster={project.thumbnail && !imageError ? project.thumbnail : undefined}
+              poster={!imageError ? optimizedThumbnail : undefined}
+              width={THUMBNAIL_DIMENSIONS.width}
+              height={THUMBNAIL_DIMENSIONS.height}
               muted
               loop
               playsInline
