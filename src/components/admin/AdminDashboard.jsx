@@ -10,9 +10,11 @@ import {
 import { 
   getProjects, createProject, updateProject, deleteProject, 
   getIntroVideo, saveIntroVideo, deleteIntroVideo,
+  uploadMedia,
   updateProjectDisplayOrder, signOutAdmin, isSupabaseConfigured,
   resolvePlayableUrl, supabase
 } from '../../lib/supabase';
+import { convertImageToWebP } from '../../utils/imageOptimization';
 import { projectCategories } from '../../data/projects';
 import AdminProjectForm from './AdminProjectForm';
 import AdminIntroVideoModal from './AdminIntroVideoModal';
@@ -204,12 +206,26 @@ export default function AdminDashboard({ user, onBackToPortfolio, onLogout, onPr
 
   const handleSaveProject = async (projectData, id, rawFiles) => {
     try {
+      let finalProjectData = { ...projectData };
+
+      // Automatic WebP Thumbnail Optimization for all project uploads
+      if (rawFiles?.thumbFile && (!finalProjectData.thumbnail || finalProjectData.thumbnail.startsWith('blob:') || finalProjectData.thumbnail.startsWith('data:'))) {
+        try {
+          const webpThumb = await convertImageToWebP(rawFiles.thumbFile, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
+          const uploadedUrl = await uploadMedia(webpThumb, 'thumbnail');
+          finalProjectData.thumbnail = uploadedUrl;
+          finalProjectData.thumbnail_url = uploadedUrl;
+        } catch (thumbErr) {
+          console.warn('WebP upload fallback in AdminDashboard:', thumbErr);
+        }
+      }
+
       if (id) {
-        await updateProject(id, projectData, rawFiles);
+        await updateProject(id, finalProjectData, rawFiles);
         showToast('Project updated successfully.');
       } else {
-        await createProject(projectData, rawFiles);
-        showToast(projectData.status === 'published' ? 'Project published to live gallery!' : 'Project saved to drafts.');
+        await createProject(finalProjectData, rawFiles);
+        showToast(finalProjectData.status === 'published' ? 'Project published to live gallery!' : 'Project saved to drafts.');
       }
       await loadProjects();
       if (typeof onProjectsUpdated === 'function') {
@@ -221,7 +237,18 @@ export default function AdminDashboard({ user, onBackToPortfolio, onLogout, onPr
   };
 
   const handleSaveIntro = async (metadata, rawFiles, onProgress) => {
-    const saved = await saveIntroVideo(metadata, rawFiles, onProgress);
+    let finalMetadata = { ...metadata };
+    if (rawFiles?.thumbFile && (!finalMetadata.thumbnail || finalMetadata.thumbnail.startsWith('blob:') || finalMetadata.thumbnail.startsWith('data:'))) {
+      try {
+        const webpThumb = await convertImageToWebP(rawFiles.thumbFile, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
+        const uploadedUrl = await uploadMedia(webpThumb, 'thumbnail', onProgress);
+        finalMetadata.thumbnail = uploadedUrl;
+        finalMetadata.thumbnail_url = uploadedUrl;
+      } catch (thumbErr) {
+        console.warn('Intro WebP upload fallback in AdminDashboard:', thumbErr);
+      }
+    }
+    const saved = await saveIntroVideo(finalMetadata, rawFiles, onProgress);
     setIntroVideo(saved);
     showToast('Intro showreel updated and live on homepage!');
     if (typeof onProjectsUpdated === 'function') {

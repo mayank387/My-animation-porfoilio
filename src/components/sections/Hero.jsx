@@ -27,7 +27,7 @@ export default function Hero({
 
   const hasVideo = Boolean(introVideo?.videoUrl);
   const rawPoster = introVideo?.thumbnailUrl || introVideo?.thumbnail || '';
-  const introPoster = getOptimizedThumbnail(rawPoster, introVideo?.id || 'creator-intro-showreel');
+  const introPoster = getOptimizedThumbnail(rawPoster, introVideo?.id || 'creator-intro-showreel', introVideo?.title || 'My Introduction video');
 
   // 1. Instant Muted Autoplay on Mount & When Video URL is Available
   useEffect(() => {
@@ -208,7 +208,7 @@ export default function Hero({
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
                 <span className="text-xs font-sans font-medium text-slate-300">
-                  Available for Commissions • Verified on <span className="text-white font-semibold">Contra</span>
+                  Available for Commissions • Worldwide Freelance Director
                 </span>
               </div>
             </motion.div>
@@ -221,7 +221,7 @@ export default function Hero({
               className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-heading font-extrabold tracking-[-0.03em] text-white leading-[1.08]"
             >
               Bringing Ideas to Life{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-electric-blue via-electric-indigo to-electric-purple">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-orange-500">
                 Through Motion.
               </span>
             </motion.h1>
@@ -232,8 +232,8 @@ export default function Hero({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 backdrop-blur-sm text-xs sm:text-sm font-sans font-medium text-cyan-300 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-electric-blue flex-shrink-0" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-studio-charcoal/80 border border-white/10 backdrop-blur-sm text-xs sm:text-sm font-sans font-medium text-amber-300 shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-studio-orange flex-shrink-0" />
                 <span>Cinematic 3D Animation | AI Video | Commercials</span>
               </div>
             </motion.div>
@@ -253,42 +253,44 @@ export default function Hero({
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.35 }}
-              className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5"
+              className="pt-1 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3.5"
             >
               {/* CTA 1: Explore Work */}
               <button
                 type="button"
                 onClick={handleScrollToShowcase}
                 aria-label="Explore My Work"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-white/30 backdrop-blur-md transition-all shadow-lg group cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-orange-500/40 backdrop-blur-md transition-all shadow-lg group cursor-pointer"
               >
-                <Play className="w-4 h-4 text-electric-blue fill-current group-hover:scale-110 transition-transform" />
+                <Play className="w-4 h-4 text-studio-orange fill-current group-hover:scale-110 transition-transform" />
                 <span>Explore My Work</span>
                 <ChevronDown className="w-4 h-4 text-slate-400 group-hover:translate-y-0.5 transition-transform" />
               </button>
 
-              {/* CTA 2: Hire Me on Contra */}
+              {/* CTA 2: Hire Me on Behance */}
               <a
-                href={contraConfig.profileUrl}
+                href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Hire Mayank on Contra"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white shadow-electric-glow hover:shadow-[0_0_35px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+                aria-label="Hire Mayank on Behance"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-[#1769FF] hover:bg-[#0056eb] text-white shadow-[0_0_25px_rgba(23,105,255,0.4)] hover:shadow-[0_0_35px_rgba(23,105,255,0.65)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer border border-blue-400/30"
               >
-                <ShieldCheck className="w-4 h-4" />
-                <span>Hire Me on Contra</span>
+                <svg className="w-4 h-4 fill-current flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-4.976 3-3.419 0-5.75-2.367-5.75-5.75 0-3.383 2.331-5.75 5.75-5.75 3.419 0 5.75 2.367 5.75 5.75 0 .239-.018.513-.042.75h-8.878c.096 1.691 1.401 2.95 3.327 2.95 1.546 0 2.502-.676 2.869-1.25h1.996zm-7.146-4.25h5.45c-.147-1.464-1.282-2.35-2.677-2.35-1.42 0-2.613.886-2.773 2.35zm-8.58 7.25h-8v-14h7.525c2.458 0 4.225.867 4.225 3.342 0 1.564-.858 2.55-1.925 2.992 1.475.483 2.275 1.708 2.275 3.408 0 2.75-2.025 4.258-4.1 4.258zm-5.4-8.3h4.625c1.175 0 2.1-.55 2.1-1.75 0-1.125-.875-1.625-2.05-1.625h-4.675v3.375zm0 5.85h4.825c1.375 0 2.25-.65 2.25-1.95 0-1.25-.9-1.9-2.325-1.9h-4.75v3.85z"/>
+                </svg>
+                <span>Hire Me on Behance</span>
                 <ArrowUpRight className="w-4 h-4" />
               </a>
 
-              {/* CTA 3: Upload Work / Studio CMS */}
+              {/* CTA 4: Upload Work / Studio CMS */}
               <button
                 type="button"
                 onClick={onOpenAdminUpload}
                 aria-label="Upload Work to Studio CMS"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-electric-indigo/50 backdrop-blur-md transition-all shadow-md group cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-orange-500/40 backdrop-blur-md transition-all shadow-md group cursor-pointer"
                 title="Upload Videos & Manage Portfolio"
               >
-                <UploadCloud className="w-4 h-4 text-electric-blue group-hover:scale-110 transition-transform" />
+                <UploadCloud className="w-4 h-4 text-studio-orange group-hover:scale-110 transition-transform" />
                 <span>Upload Work</span>
               </button>
             </motion.div>
@@ -309,7 +311,7 @@ export default function Hero({
               ref={containerRef}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full aspect-video rounded-3xl overflow-hidden bg-black border border-white/15 hover:border-electric-indigo/40 transition-all duration-500 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] group flex items-center justify-center"
+              className="relative w-full aspect-video rounded-3xl overflow-hidden bg-black border border-white/15 hover:border-orange-500/40 transition-all duration-500 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] hover:shadow-[0_0_50px_rgba(255,107,0,0.18)] group flex items-center justify-center"
             >
               
               {hasVideo ? (
@@ -329,7 +331,14 @@ export default function Hero({
                         fetchPriority="high"
                         loading="eager"
                         decoding="async"
-                        onError={() => setPosterError(true)}
+                        onError={(e) => {
+                          const fallbackUrl = introVideo?.originalThumbnail;
+                          if (fallbackUrl && e.currentTarget.src !== fallbackUrl) {
+                            e.currentTarget.src = fallbackUrl;
+                          } else {
+                            setPosterError(true);
+                          }
+                        }}
                         className="w-full h-full object-cover"
                       />
                     </picture>
@@ -412,7 +421,7 @@ export default function Hero({
                     <button
                       type="button"
                       onClick={togglePlay}
-                      className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-black/70 hover:bg-electric-indigo backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all transform hover:scale-110 shadow-2xl cursor-pointer z-20"
+                      className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-black/70 hover:bg-studio-orange backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all transform hover:scale-110 shadow-2xl cursor-pointer z-20"
                       aria-label="Play introduction video"
                     >
                       <Play className="w-7 h-7 fill-white ml-0.5" />
@@ -439,10 +448,10 @@ export default function Hero({
                           videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 5);
                         }
                       }}
-                      className="w-full h-1.5 bg-white/20 hover:h-2.5 rounded-full cursor-pointer mb-2.5 relative overflow-hidden transition-all focus:outline-none focus:ring-1 focus:ring-electric-blue"
+                      className="w-full h-1.5 bg-white/20 hover:h-2.5 rounded-full cursor-pointer mb-2.5 relative overflow-hidden transition-all focus:outline-none focus:ring-1 focus:ring-studio-orange"
                     >
                       <div
-                        className="h-full bg-gradient-to-r from-electric-blue to-electric-indigo rounded-full"
+                        className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"
                         style={{ width: `${progress}%` }}
                       />
                     </div>

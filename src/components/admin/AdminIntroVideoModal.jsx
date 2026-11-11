@@ -6,6 +6,7 @@ import {
   Camera, Check
 } from 'lucide-react';
 import { validateUploadFile, isSupabaseConfigured } from '../../lib/supabase';
+import { convertImageToWebP, extractVideoThumbnailAsWebP } from '../../utils/imageOptimization';
 
 export default function AdminIntroVideoModal({
   isOpen,
@@ -203,19 +204,23 @@ export default function AdminIntroVideoModal({
     }
   };
 
-  const handleThumbChange = (e) => {
+  const handleThumbChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       validateUploadFile(file, 'thumbnail');
+      // Automatic client-side WebP optimization
+      const optimizedFile = await convertImageToWebP(file, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
+      setThumbnailFile(optimizedFile);
+      setThumbError('');
+      const previewUrl = createSafeObjectUrl(optimizedFile);
+      setPreviewThumbSrc(previewUrl);
+    } catch (err) {
       setThumbnailFile(file);
       setThumbError('');
       const previewUrl = createSafeObjectUrl(file);
       setPreviewThumbSrc(previewUrl);
-    } catch (err) {
-      setThumbnailFile(null);
-      setThumbError(err.message);
     }
   };
 
@@ -236,10 +241,30 @@ export default function AdminIntroVideoModal({
       return;
     }
 
+    // Auto-generate high-res WebP thumbnail from video if user has not chosen an image
+    let thumbToProcess = thumbnailFile;
+    if (!thumbToProcess && !thumbnailUrl.trim() && videoFile) {
+      try {
+        const autoThumb = await extractVideoThumbnailAsWebP(videoFile, 0.15);
+        if (autoThumb) {
+          thumbToProcess = autoThumb;
+          setThumbnailFile(autoThumb);
+        }
+      } catch (e) {
+        console.warn('Auto video poster extraction skipped:', e);
+      }
+    }
+
     setIsSubmitting(true);
     setUploadPercent(0);
 
     try {
+      // Ensure thumbnail is converted to WebP
+      let finalThumbFile = thumbToProcess;
+      if (finalThumbFile) {
+        finalThumbFile = await convertImageToWebP(finalThumbFile, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
+      }
+
       const metadata = {
         title: title.trim() || 'A GLIMPSE INTO MY CREATIVE WORLD.',
         description: description.trim() || 'Explore my creativity through cinematic visuals, 3D animations and product advertisements.',
@@ -251,7 +276,7 @@ export default function AdminIntroVideoModal({
 
       await onSave(
         metadata, 
-        { videoFile, thumbFile: thumbnailFile }, 
+        { videoFile, thumbFile: finalThumbFile }, 
         (percent, loaded, total) => {
           setUploadPercent(percent);
           setUploadStats({ loaded, total });

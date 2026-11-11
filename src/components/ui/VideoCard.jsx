@@ -29,7 +29,7 @@ export default function VideoCard({ project, onSelect }) {
 
   const isVertical = project.aspectRatio === "9:16";
   const isFourThree = project.aspectRatio === "4:3";
-  const optimizedThumbnail = getOptimizedThumbnail(project.thumbnail, project.id);
+  const optimizedThumbnail = getOptimizedThumbnail(project.thumbnail, project.id, project.title);
 
   // IntersectionObserver for automatic autoplay & pause when visible in viewport
   useEffect(() => {
@@ -109,13 +109,15 @@ export default function VideoCard({ project, onSelect }) {
   // Badge styling by category
   const getBadgeVariant = (cat) => {
     switch (cat) {
-      case '3d-animation': return 'indigo';
-      case 'product-ads': return 'indigo';
+      case '3d-ads': return 'orange';
+      case '2d-animation': return 'amber';
+      case '3d-animation': return 'orange';
+      case 'product-ads': return 'orange';
       case 'cinematic-commercial': return 'violet';
       case 'nature-wildlife': return 'green';
       case 'promos': return 'cyan';
       case 'reels': return 'cyan';
-      default: return 'indigo';
+      default: return 'orange';
     }
   };
 
@@ -171,8 +173,9 @@ export default function VideoCard({ project, onSelect }) {
               decoding="async"
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
-                if (e.currentTarget.src !== project.thumbnail && project.thumbnail) {
-                  e.currentTarget.src = project.thumbnail;
+                const fallbackUrl = project.originalThumbnail || (project.thumbnail !== optimizedThumbnail ? project.thumbnail : '');
+                if (fallbackUrl && e.currentTarget.src !== fallbackUrl) {
+                  e.currentTarget.src = fallbackUrl;
                 } else {
                   setImageError(true);
                 }

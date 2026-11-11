@@ -127,13 +127,11 @@ export default function Services() {
                 </div>
 
                 <a
-                  href={contraConfig.profileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`Book ${service.title} service on Contra`}
+                  href="#contact"
+                  aria-label={`Inquire about ${service.title} service`}
                   className="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-electric-blue hover:text-white transition-colors flex-shrink-0 group/link cursor-pointer"
                 >
-                  <span>Book on Contra</span>
+                  <span>Inquire Service</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover/link:translate-x-1 transition-transform" />
                 </a>
               </div>
@@ -144,7 +142,7 @@ export default function Services() {
         {/* Bottom Banner Note */}
         <div className="mt-16 text-center">
           <p className="text-xs font-mono text-slate-400">
-            All services include full broadcast usage rights, milestone review loops, and escrow payment protection via Contra.
+            All services include full commercial broadcast usage rights, milestone review loops, and escrow contract protection across all major freelance platforms.
           </p>
         </div>
 

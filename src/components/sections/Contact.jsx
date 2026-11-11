@@ -79,7 +79,7 @@ export default function Contact() {
             Looking for creative video advertisements or cinematic animations for your brand? Let's work together.
           </motion.p>
 
-          {/* Prominent Action Buttons: Hire Me on Contra + View Contra Portfolio + Mailto */}
+          {/* Prominent Action Buttons: Send Project Brief + Platform Profiles */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -87,37 +87,37 @@ export default function Contact() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 flex-wrap"
           >
-            {/* Prominent Button 1: Hire Me on Contra */}
+            {/* Action 1: Send Project Brief */}
             <a
-              href={contraConfig.profileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={`mailto:${contraConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-sm font-semibold font-sans bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white shadow-electric-glow hover:shadow-[0_0_35px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
             >
-              <ShieldCheck className="w-4 h-4 text-white" />
-              <span>Hire Me on Contra</span>
+              <Mail className="w-4 h-4 text-white" />
+              <span>Send Project Brief</span>
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
 
-            {/* Prominent Button 2: View My Contra Portfolio */}
+            {/* Action 2: Hire Me on Behance */}
             <a
-              href={contraConfig.profileUrl}
+              href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-xl text-sm font-semibold font-sans bg-white/[0.05] hover:bg-white/[0.12] text-white border border-white/15 hover:border-white/30 backdrop-blur-md transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg group cursor-pointer"
+              aria-label="Hire Mayank on Behance"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl text-sm font-semibold font-sans bg-[#1769FF]/20 hover:bg-[#1769FF]/35 text-white border border-[#1769FF]/40 backdrop-blur-md transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg group cursor-pointer"
             >
-              <Briefcase className="w-4 h-4 text-electric-blue" />
-              <span>View My Contra Portfolio</span>
+              <svg className="w-4 h-4 fill-current text-[#1769FF]" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-4.976 3-3.419 0-5.75-2.367-5.75-5.75 0-3.383 2.331-5.75 5.75-5.75 3.419 0 5.75 2.367 5.75 5.75 0 .239-.018.513-.042.75h-8.878c.096 1.691 1.401 2.95 3.327 2.95 1.546 0 2.502-.676 2.869-1.25h1.996zm-7.146-4.25h5.45c-.147-1.464-1.282-2.35-2.677-2.35-1.42 0-2.613.886-2.773 2.35zm-8.58 7.25h-8v-14h7.525c2.458 0 4.225.867 4.225 3.342 0 1.564-.858 2.55-1.925 2.992 1.475.483 2.275 1.708 2.275 3.408 0 2.75-2.025 4.258-4.1 4.258zm-5.4-8.3h4.625c1.175 0 2.1-.55 2.1-1.75 0-1.125-.875-1.625-2.05-1.625h-4.675v3.375zm0 5.85h4.825c1.375 0 2.25-.65 2.25-1.95 0-1.25-.9-1.9-2.325-1.9h-4.75v3.85z"/>
+              </svg>
+              <span>Hire Me on Behance</span>
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
 
             {/* Clickable Mailto Email Button */}
             <a
               href={`mailto:${contraConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-xl text-sm font-semibold font-sans bg-white/[0.03] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/10 hover:border-electric-blue/40 backdrop-blur-md transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl text-sm font-semibold font-sans bg-white/[0.03] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/10 hover:border-electric-blue/40 backdrop-blur-md transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
             >
-              <Mail className="w-4 h-4 text-electric-blue" />
-              <span>{contraConfig.email}</span>
+              <span className="font-mono text-xs text-electric-blue">{contraConfig.email}</span>
             </a>
           </motion.div>
         </div>
@@ -125,7 +125,7 @@ export default function Contact() {
         {/* Contact Matrix: Email Card & Quick Inquiry Form */}
         <div className="mt-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
           
-          {/* Left Column: Direct Email & Contra Trust Card */}
+          {/* Left Column: Direct Email & Trust Card */}
           <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
             
             {/* Email Contact Card */}
@@ -189,31 +189,31 @@ export default function Contact() {
                 </a>
 
                 <a
-                  href={contraConfig.profileUrl}
+                  href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-electric-indigo/10 hover:bg-electric-indigo/20 text-indigo-300 hover:text-white text-xs font-mono font-medium border border-electric-indigo/20 hover:border-electric-indigo/40 transition-all transform hover:-translate-y-0.5"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#1769FF]/15 hover:bg-[#1769FF]/25 text-white text-xs font-mono font-medium border border-[#1769FF]/30 hover:border-[#1769FF]/50 transition-all transform hover:-translate-y-0.5"
                 >
-                  <Briefcase className="w-3.5 h-3.5 text-electric-blue" />
-                  <span>Contra Portfolio</span>
+                  <Briefcase className="w-3.5 h-3.5 text-[#1769FF]" />
+                  <span>Behance Profile</span>
                 </a>
               </div>
             </div>
 
-            {/* Contra Escrow Protection Guarantee Card */}
+            {/* Escrow Protection & Contract Guarantee Card */}
             <div className="p-7 rounded-3xl bg-studio-surface border border-white/[0.08] space-y-3.5">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
                   <ShieldCheck className="w-4 h-4" />
                 </div>
-                <span className="font-heading font-semibold text-sm text-white tracking-tight">Milestone Protected on Contra</span>
+                <span className="font-heading font-semibold text-sm text-white tracking-tight">Milestone Escrow Protected</span>
               </div>
               <p className="text-xs text-studio-muted leading-relaxed">
-                When working through Contra, your production budget is held safely in escrow and only released as you review and approve each creative milestone.
+                Whether collaborating through Upwork, Fiverr, Behance, or a direct freelance contract, your production budget is held safely in milestone escrow and only released as you review and approve each creative phase.
               </p>
               <div className="pt-1 flex items-center gap-2 text-[11px] font-mono text-slate-400">
                 <CheckCircle2 className="w-3.5 h-3.5 text-electric-blue" />
-                <span>Zero client commission fees • Standard invoices provided</span>
+                <span>Zero hidden surprises • Commercial contracts & invoices provided</span>
               </div>
             </div>
 
@@ -306,12 +306,12 @@ export default function Contact() {
                   </button>
 
                   <a
-                    href={contraConfig.profileUrl}
+                    href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs font-mono text-slate-400 hover:text-electric-blue transition-colors flex items-center gap-1.5 group cursor-pointer"
                   >
-                    <span>Prefer chatting on Contra?</span>
+                    <span>Prefer viewing work on Behance?</span>
                     <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </a>
                 </div>
@@ -325,10 +325,10 @@ export default function Contact() {
         <div className="mt-16 pt-12 border-t border-white/[0.08]">
           <div className="text-center max-w-md mx-auto mb-8">
             <span className="text-xs font-mono uppercase tracking-widest text-slate-400 block">
-              Official Channels
+              Official Channels & Portfolios
             </span>
             <p className="mt-1 text-xs text-studio-muted">
-              Book through Contra for escrow protection or reach out directly via email.
+              Connect through your preferred freelance platform, review my verified portfolios, or reach out directly.
             </p>
           </div>
 
@@ -342,7 +342,13 @@ export default function Contact() {
                 className="flex-1 min-w-[240px] p-5 rounded-2xl bg-studio-surface hover:bg-studio-card border border-white/5 hover:border-electric-indigo/40 transition-all text-center group flex flex-col items-center justify-center gap-1.5 shadow-lg transform hover:-translate-y-0.5"
               >
                 <span className="text-sm font-heading font-semibold text-white group-hover:text-electric-blue transition-colors flex items-center gap-1.5 tracking-tight">
-                  {social.name === 'Contra' ? <ShieldCheck className="w-4 h-4 text-emerald-400" /> : <Mail className="w-4 h-4 text-electric-blue" />}
+                  {social.name === 'Behance' ? (
+                    <svg className="w-4 h-4 fill-current text-[#1769FF]" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-4.976 3-3.419 0-5.75-2.367-5.75-5.75 0-3.383 2.331-5.75 5.75-5.75 3.419 0 5.75 2.367 5.75 5.75 0 .239-.018.513-.042.75h-8.878c.096 1.691 1.401 2.95 3.327 2.95 1.546 0 2.502-.676 2.869-1.25h1.996zm-7.146-4.25h5.45c-.147-1.464-1.282-2.35-2.677-2.35-1.42 0-2.613.886-2.773 2.35zm-8.58 7.25h-8v-14h7.525c2.458 0 4.225.867 4.225 3.342 0 1.564-.858 2.55-1.925 2.992 1.475.483 2.275 1.708 2.275 3.408 0 2.75-2.025 4.258-4.1 4.258zm-5.4-8.3h4.625c1.175 0 2.1-.55 2.1-1.75 0-1.125-.875-1.625-2.05-1.625h-4.675v3.375zm0 5.85h4.825c1.375 0 2.25-.65 2.25-1.95 0-1.25-.9-1.9-2.325-1.9h-4.75v3.85z"/>
+                    </svg>
+                  ) : (
+                    <Mail className="w-4 h-4 text-electric-blue" />
+                  )}
                   <span>{social.name}</span>
                   <ArrowUpRight className="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                 </span>

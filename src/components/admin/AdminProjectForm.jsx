@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { projectCategories } from '../../data/projects';
 import { uploadMedia, validateUploadFile, isSupabaseConfigured } from '../../lib/supabase';
+import { convertImageToWebP, extractVideoThumbnailAsWebP } from '../../utils/imageOptimization';
 import Badge from '../ui/Badge';
 
 export default function AdminProjectForm({ 
@@ -242,20 +243,24 @@ export default function AdminProjectForm({
     }
   };
 
-  // Handle local thumbnail image pick with immediate validation
-  const handleThumbnailFileChange = (e) => {
+  // Handle local thumbnail image pick with immediate validation & automatic WebP optimization
+  const handleThumbnailFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       validateUploadFile(file, 'thumbnail');
+      // Automatic client-side WebP optimization
+      const optimizedFile = await convertImageToWebP(file, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
+      setThumbnailFile(optimizedFile);
+      setThumbFileError('');
+      const previewUrl = createSafeObjectUrl(optimizedFile);
+      setPreviewThumbSrc(previewUrl);
+    } catch (err) {
       setThumbnailFile(file);
       setThumbFileError('');
       const previewUrl = createSafeObjectUrl(file);
       setPreviewThumbSrc(previewUrl);
-    } catch (err) {
-      setThumbnailFile(null);
-      setThumbFileError(err.message);
     }
   };
 
@@ -283,7 +288,22 @@ export default function AdminProjectForm({
       return;
     }
 
-    if (!thumbnailFile && !thumbnailUrl.trim()) {
+    // Auto-generate high-res WebP thumbnail from video if user has not picked a custom image
+    let thumbToProcess = thumbnailFile;
+    if (!thumbToProcess && !thumbnailUrl.trim() && videoFile) {
+      setUploadStage('Auto-extracting high-resolution WebP thumbnail from video...');
+      try {
+        const autoThumb = await extractVideoThumbnailAsWebP(videoFile, 0.15);
+        if (autoThumb) {
+          thumbToProcess = autoThumb;
+          setThumbnailFile(autoThumb);
+        }
+      } catch (e) {
+        console.warn('Auto video thumbnail extraction skipped:', e);
+      }
+    }
+
+    if (!thumbToProcess && !thumbnailUrl.trim()) {
       setErrorMsg('Please select a thumbnail image from your computer or enter a poster URL.');
       return;
     }
@@ -315,16 +335,19 @@ export default function AdminProjectForm({
         }
       }
 
-      // 2. Upload Thumbnail if local image selected and Supabase configured
-      if (thumbnailFile) {
+      // 2. Upload Thumbnail with automatic WebP conversion and Supabase Storage delivery
+      if (thumbToProcess) {
+        setUploadStage('Optimizing thumbnail to WebP format...');
+        const optimizedThumbFile = await convertImageToWebP(thumbToProcess, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
+
         if (!isConfigured) {
           setUploadStage('Staging thumbnail in local database...');
           setUploadPercent(90);
-          finalThumbnailUrl = previewThumbSrc;
+          finalThumbnailUrl = previewThumbSrc || createSafeObjectUrl(optimizedThumbFile);
         } else {
-          setUploadStage(`Uploading thumbnail to cloud storage (${formatBytes(thumbnailFile.size)})...`);
+          setUploadStage(`Uploading optimized WebP thumbnail (${formatBytes(optimizedThumbFile.size)})...`);
           finalThumbnailUrl = await uploadMedia(
-            thumbnailFile, 
+            optimizedThumbFile, 
             'thumbnail', 
             (percent, loaded, total) => {
               setUploadPercent(70 + Math.round(percent * 0.25)); // thumbnail is 25%
@@ -367,7 +390,7 @@ export default function AdminProjectForm({
         disclaimer: 'Portfolio showcase project.'
       };
 
-      await onSave(projectData, project?.id, { videoFile, thumbFile: thumbnailFile });
+      await onSave(projectData, project?.id, { videoFile, thumbFile: thumbToProcess || thumbnailFile });
       setUploadPercent(100);
       onClose();
     } catch (err) {
@@ -483,6 +506,8 @@ export default function AdminProjectForm({
                     onChange={(e) => setCategory(e.target.value)}
                     className="w-full bg-studio-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-electric-indigo cursor-pointer"
                   >
+                    <option value="3d-ads">3D Advertisement</option>
+                    <option value="2d-animation">2D Animation</option>
                     <option value="3d-animation">3D Animation</option>
                     <option value="product-ads">Product Ad</option>
                     <option value="cinematic-commercial">Commercial</option>

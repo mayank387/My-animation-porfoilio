@@ -41,10 +41,10 @@ export default function Footer({ onOpenAdmin }) {
               Specialized freelance creative studio dedicated to AI-generated 3D animated videos, cinematic product advertisements, promotional launch films, and high-retention creative Reels.
             </p>
 
-            {/* Contra Protection Badge */}
+            {/* Freelance Milestone Protection Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-xs font-sans font-medium text-slate-300">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Contra Verified Creator • Milestone Escrow Protected</span>
+              <span>Verified Freelance Creator • Milestone Escrow Protected</span>
             </div>
           </div>
 
@@ -73,37 +73,37 @@ export default function Footer({ onOpenAdmin }) {
             </ul>
           </div>
 
-          {/* Direct Contra Commission / Inquiries with both links */}
+          {/* Direct Freelance Inquiries & Bookings */}
           <div className="lg:col-span-4 space-y-4">
             <h4 className="text-xs font-sans font-semibold uppercase tracking-wider text-white/50">Direct Inquiries & Bookings</h4>
             <p className="text-xs text-studio-muted font-normal leading-relaxed">
-              Ready to start a production? Hire directly on Contra for secure escrow milestone billing or email your project brief.
+              Ready to start a production? Available across all major freelance platforms, secure escrow milestone contracts, or direct email inquiry.
             </p>
 
             <div className="flex flex-col gap-2.5">
-              {/* Button 1: Prominent "Hire Me on Contra" Button */}
+              {/* Button 1: Start a Project */}
               <a
-                href={contraConfig.profileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Hire Mayank on Contra for 3D Video Production"
+                href="#contact"
+                aria-label="Start a freelance project with Mayank"
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white text-xs font-sans font-semibold shadow-electric-glow hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-white" />
-                <span>Hire Me on Contra</span>
+                <span>Start a Project</span>
                 <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </a>
 
-              {/* Button 2: "View My Contra Portfolio" Link */}
+              {/* Button 2: Platform Profile (Behance) */}
               <a
-                href={contraConfig.profileUrl}
+                href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="View Mayank's Contra Freelance Portfolio"
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-white text-xs font-sans font-semibold border border-white/10 hover:border-electric-blue/40 transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
+                aria-label="Hire Mayank on Behance"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#1769FF]/20 hover:bg-[#1769FF]/35 text-white text-xs font-sans font-semibold border border-[#1769FF]/40 hover:border-[#1769FF]/70 transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
               >
-                <Briefcase className="w-3.5 h-3.5 text-electric-blue" />
-                <span>View My Contra Portfolio</span>
+                <svg className="w-3.5 h-3.5 fill-current text-[#1769FF]" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-4.976 3-3.419 0-5.75-2.367-5.75-5.75 0-3.383 2.331-5.75 5.75-5.75 3.419 0 5.75 2.367 5.75 5.75 0 .239-.018.513-.042.75h-8.878c.096 1.691 1.401 2.95 3.327 2.95 1.546 0 2.502-.676 2.869-1.25h1.996zm-7.146-4.25h5.45c-.147-1.464-1.282-2.35-2.677-2.35-1.42 0-2.613.886-2.773 2.35zm-8.58 7.25h-8v-14h7.525c2.458 0 4.225.867 4.225 3.342 0 1.564-.858 2.55-1.925 2.992 1.475.483 2.275 1.708 2.275 3.408 0 2.75-2.025 4.258-4.1 4.258zm-5.4-8.3h4.625c1.175 0 2.1-.55 2.1-1.75 0-1.125-.875-1.625-2.05-1.625h-4.675v3.375zm0 5.85h4.825c1.375 0 2.25-.65 2.25-1.95 0-1.25-.9-1.9-2.325-1.9h-4.75v3.85z"/>
+                </svg>
+                <span>Hire on Behance</span>
                 <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </a>
 
@@ -140,19 +140,21 @@ export default function Footer({ onOpenAdmin }) {
 
         </div>
 
-        {/* Official Channels Row */}
+        {/* Official Portfolios & Channels Row */}
         <div className="py-6 flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.06] text-xs font-sans">
-          <span className="text-slate-400 font-medium">Official Channels:</span>
+          <span className="text-slate-400 font-medium">Official Portfolios & Channels:</span>
           <div className="flex flex-wrap items-center gap-6">
             <a
-              href={contraConfig.profileUrl}
+              href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Mayank's official Contra profile"
+              aria-label="Mayank's official Behance profile"
               className="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group font-medium"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Contra: Mayankk4rn</span>
+              <svg className="w-3.5 h-3.5 fill-current text-[#1769FF]" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-4.976 3-3.419 0-5.75-2.367-5.75-5.75 0-3.383 2.331-5.75 5.75-5.75 3.419 0 5.75 2.367 5.75 5.75 0 .239-.018.513-.042.75h-8.878c.096 1.691 1.401 2.95 3.327 2.95 1.546 0 2.502-.676 2.869-1.25h1.996zm-7.146-4.25h5.45c-.147-1.464-1.282-2.35-2.677-2.35-1.42 0-2.613.886-2.773 2.35zm-8.58 7.25h-8v-14h7.525c2.458 0 4.225.867 4.225 3.342 0 1.564-.858 2.55-1.925 2.992 1.475.483 2.275 1.708 2.275 3.408 0 2.75-2.025 4.258-4.1 4.258zm-5.4-8.3h4.625c1.175 0 2.1-.55 2.1-1.75 0-1.125-.875-1.625-2.05-1.625h-4.675v3.375zm0 5.85h4.825c1.375 0 2.25-.65 2.25-1.95 0-1.25-.9-1.9-2.325-1.9h-4.75v3.85z"/>
+              </svg>
+              <span>Behance: mayankkarn3</span>
               <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
 
@@ -174,7 +176,7 @@ export default function Footer({ onOpenAdmin }) {
             © {new Date().getFullYear()} Mayank Creative Studio. All visual rights reserved.
           </div>
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center sm:justify-end">
-            <span>Client Contracts via Contra Escrow</span>
+            <span>Client Contracts via Milestone Escrow</span>
             <span>•</span>
             <span className="text-slate-300">4K Master Delivery</span>
             <span>•</span>

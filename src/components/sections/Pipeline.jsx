@@ -84,27 +84,25 @@ export default function Pipeline() {
           ))}
         </div>
 
-        {/* Milestone Security Note on Contra */}
+        {/* Milestone Security Note */}
         <div className="mt-14 max-w-4xl mx-auto rounded-2xl p-6 bg-white/[0.02] border border-white/5 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-electric-indigo/10 border border-electric-indigo/20 flex items-center justify-center text-electric-indigo flex-shrink-0">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-white">Milestone-Protected Production via Contra</h4>
+              <h4 className="text-sm font-semibold text-white">Milestone-Protected Freelance Production</h4>
               <p className="text-xs text-studio-muted mt-1 leading-relaxed">
-                Every project is structured into clear milestone releases. Funds are held in escrow and released only upon review and approval of each phase.
+                Every project is structured into clear milestone deliverables. Work with complete peace of mind through your preferred freelance platform (Upwork, Fiverr, Behance) or direct contract with escrow protection.
               </p>
             </div>
           </div>
 
           <a
-            href={contraConfig.profileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#contact"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-electric-indigo/20 hover:bg-electric-indigo/30 text-indigo-300 border border-electric-indigo/30 text-xs font-sans font-semibold transition-colors flex-shrink-0 cursor-pointer"
           >
-            <span>Learn More on Contra</span>
+            <span>Discuss Your Project</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>

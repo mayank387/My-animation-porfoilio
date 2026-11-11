@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { contraConfig } from '../../data/contraConfig';
 import Badge from './Badge';
+import { getOptimizedThumbnail } from '../../utils/imageOptimization';
 
 export default function VideoModal({ 
   project, 
@@ -390,7 +391,7 @@ export default function VideoModal({
                   ref={videoRef}
                   key={project.id || project.videoUrl}
                   src={project.videoUrl}
-                  poster={project.thumbnail}
+                  poster={getOptimizedThumbnail(project.thumbnail, project.id, project.title)}
                   playsInline
                   loop
                   preload="auto"
@@ -580,14 +581,13 @@ export default function VideoModal({
                   </p>
                 </div>
 
-                {/* Direct Contra Booking CTA */}
+                {/* Direct Project Inquiry CTA */}
                 <a
-                  href={contraConfig.profileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#contact"
+                  onClick={() => onClose && onClose()}
                   className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white text-xs font-sans font-semibold shadow-electric-glow hover:opacity-95 transition-all transform hover:-translate-y-0.5 flex-shrink-0 cursor-pointer"
                 >
-                  <span>Book on Contra</span>
+                  <span>Start a Project</span>
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>

@@ -16,6 +16,7 @@ const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 
 import { getProjects, getIntroVideo, getAdminSession, onAuthStateChange } from './lib/supabase';
+import { initAnalytics, trackPageView } from './lib/analytics';
 
 export default function App() {
   const [projectsList, setProjectsList] = useState([]);
@@ -91,11 +92,32 @@ export default function App() {
     };
   }, [loadPublicProjects, loadIntroShowreel, checkAdminAuth]);
 
+  // GA4 Analytics Initialization & Traffic Source Detection
+  useEffect(() => {
+    const cleanupAnalytics = initAnalytics();
+    return () => {
+      if (typeof cleanupAnalytics === 'function') cleanupAnalytics();
+    };
+  }, []);
+
+  // GA4 Route Change Listener
+  useEffect(() => {
+    const currentPath = isAdminView 
+      ? '/admin' 
+      : (window.location.pathname + window.location.hash || '/');
+    const pageTitle = isAdminView 
+      ? 'Studio Admin // Mayank Portfolio' 
+      : 'MAYANK // Creative Director & 3D AI Video Producer';
+    trackPageView(currentPath, pageTitle);
+  }, [isAdminView]);
+
   // URL route listener (supports /admin, #admin, and browser back/forward buttons)
   useEffect(() => {
     const handleUrlChange = () => {
       const targetIsAdmin = isPathAdmin();
       setIsAdminView(targetIsAdmin);
+      const newPath = targetIsAdmin ? '/admin' : (window.location.pathname + window.location.hash || '/');
+      trackPageView(newPath);
       if (!targetIsAdmin) {
         // When coming back from admin to public site, reload public projects and intro showreel
         loadPublicProjects();
@@ -150,16 +172,23 @@ export default function App() {
   const handleSelectProject = (project) => {
     setSelectedProject(project);
     setIsModalOpen(true);
+    if (project?.id) {
+      trackPageView(`/project/${project.id}`, project.title || 'Project Showcase');
+    }
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    trackPageView(window.location.pathname + window.location.hash || '/', document.title);
   };
 
   const handleOpenFeaturedReel = (targetProject) => {
     const featured = targetProject || projectsList.find((p) => p.featured) || projectsList[0];
     setSelectedProject(featured);
     setIsModalOpen(true);
+    if (featured?.id) {
+      trackPageView(`/project/${featured.id}`, featured.title || 'Featured Showreel');
+    }
   };
 
   // -------------------------------------------------------------

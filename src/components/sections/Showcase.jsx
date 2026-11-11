@@ -9,9 +9,33 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
   const [activeCategory, setActiveCategory] = useState('all');
   const projectList = customProjects || [];
 
+  // Robust category matching for 3D Ads, 2D Animation, and specific tags
+  const matchesCategory = (project, catId) => {
+    if (catId === 'all') return true;
+    if (catId === '3d-ads') {
+      return (
+        project.category === '3d-ads' ||
+        project.category === 'product-ads' ||
+        project.category === 'cinematic-commercial' ||
+        (project.category === '3d-animation' && !projectList.some((p) => p.category === '3d-ads'))
+      );
+    }
+    if (catId === '2d-animation') {
+      return project.category === '2d-animation' || project.category === '2d';
+    }
+    return project.category === catId;
+  };
+
   const filteredProjects = activeCategory === 'all'
     ? projectList
-    : projectList.filter((p) => p.category === activeCategory);
+    : projectList.filter((p) => matchesCategory(p, activeCategory));
+
+  // Primary tabs (All, 3D Advertisement, 2D Animation) are always preserved & clickable
+  const visibleCategories = projectCategories.filter((cat) => {
+    if (cat.id === 'all' || cat.id === '3d-ads' || cat.id === '2d-animation') return true;
+    const count = projectList.filter((p) => matchesCategory(p, cat.id)).length;
+    return count > 0;
+  });
 
   // Guarantee strict displayOrder ascending sort (Video 1 before Video 2)
   const sortedProjects = [...filteredProjects].sort((a, b) => {
@@ -24,15 +48,15 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
   return (
     <section id="showcase" className="py-24 sm:py-32 relative bg-studio-bg overflow-hidden">
       {/* Background radial glow spots */}
-      <div className="absolute top-1/4 -left-48 w-[600px] h-[600px] bg-electric-indigo/8 blur-[170px] pointer-events-none" />
-      <div className="absolute bottom-1/4 -right-48 w-[600px] h-[600px] bg-electric-blue/8 blur-[170px] pointer-events-none" />
+      <div className="absolute top-1/4 -left-48 w-[600px] h-[600px] bg-studio-orange/8 blur-[170px] pointer-events-none" />
+      <div className="absolute bottom-1/4 -right-48 w-[600px] h-[600px] bg-studio-amber/8 blur-[170px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-12 border-b border-white/[0.08]">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 text-xs font-sans font-medium text-electric-blue uppercase tracking-widest px-3 py-1 rounded-full bg-electric-blue/10 border border-electric-blue/20">
+            <div className="inline-flex items-center gap-2 text-xs font-sans font-medium text-studio-orange uppercase tracking-widest px-3 py-1 rounded-full bg-studio-orange/10 border border-studio-orange/20">
               <Film className="w-3.5 h-3.5" />
               <span>Cinematic Portfolio</span>
             </div>
@@ -51,13 +75,13 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
             </div>
           </div>
 
-          {/* Category Filter Pills (rendered only when projects exist) */}
+          {/* Category Filter Pills (rendered with preserved 2D Animation & 3D Advertisement tabs) */}
           {projectList.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 max-w-2xl">
-              {projectCategories.map((cat) => {
+              {visibleCategories.map((cat) => {
                 const count = cat.id === 'all'
                   ? projectList.length
-                  : projectList.filter(p => p.category === cat.id).length;
+                  : projectList.filter(p => matchesCategory(p, cat.id)).length;
 
                 const isActive = activeCategory === cat.id;
 
@@ -69,7 +93,7 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
                     aria-label={`Filter portfolio by ${cat.label} (${count} projects)`}
                     className={`px-4 py-2.5 rounded-xl text-xs font-sans transition-all duration-300 flex items-center gap-2 cursor-pointer ${
                       isActive
-                        ? 'bg-gradient-to-r from-electric-indigo to-electric-blue text-white shadow-electric-glow font-semibold border-transparent'
+                        ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-orange-glow font-semibold border-transparent'
                         : 'bg-studio-surface hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/5 font-medium'
                     }`}
                   >
@@ -88,7 +112,7 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
                 type="button"
                 onClick={onOpenAdmin}
                 aria-label="Upload New Reel to Portfolio"
-                className="px-4 py-2.5 rounded-xl text-xs font-sans font-semibold bg-white/[0.06] hover:bg-electric-indigo text-white border border-white/10 hover:border-transparent transition-all flex items-center gap-2 cursor-pointer shadow-md group ml-auto sm:ml-0"
+                className="px-4 py-2.5 rounded-xl text-xs font-sans font-semibold bg-white/[0.06] hover:bg-studio-orange text-white border border-white/10 hover:border-transparent transition-all flex items-center gap-2 cursor-pointer shadow-md group ml-auto sm:ml-0"
                 title="Upload New Reel to Portfolio"
               >
                 <UploadCloud className="w-3.5 h-3.5 text-electric-blue group-hover:text-white transition-colors" />
@@ -124,13 +148,11 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
 
               <div className="pt-4 flex flex-wrap items-center justify-center gap-4">
                 <a
-                  href={contraConfig.profileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="#contact"
                   className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl text-xs font-semibold font-sans bg-gradient-to-r from-electric-indigo to-electric-blue text-white shadow-electric-glow hover:opacity-95 transition-all cursor-pointer"
                 >
                   <ShieldCheck className="w-4 h-4" />
-                  <span>Hire Me on Contra</span>
+                  <span>Start a Project</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </a>
 
@@ -178,30 +200,28 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
           </>
         )}
 
-        {/* Bottom Agency Banner for Hiring on Contra */}
+        {/* Bottom Agency Banner for Freelance Commissions */}
         <div className="mt-20 p-8 sm:p-10 rounded-3xl bg-gradient-to-r from-studio-surface via-studio-card to-studio-surface border border-white/[0.08] flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-1/4 w-[400px] h-[200px] bg-electric-indigo/10 blur-[130px] pointer-events-none" />
 
           <div className="space-y-2 text-center md:text-left relative z-10">
             <div className="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-emerald-400">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Contra Escrow & Milestone Protected</span>
+              <span>Milestone Escrow & Contract Protected</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-heading font-bold text-white tracking-tight">
               Want a similar cinematic commercial for your brand?
             </h3>
             <p className="text-xs sm:text-sm text-studio-muted max-w-xl font-normal leading-relaxed">
-              I collaborate with global brands and founders to direct tailor-made 3D product animations, AI visual narratives, and promotional launch films.
+              I collaborate with global brands, agencies, and founders across all major freelance platforms and direct contracts to direct tailor-made 3D product animations and AI visual narratives.
             </p>
           </div>
 
           <a
-            href={contraConfig.profileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#contact"
             className="inline-flex items-center gap-2.5 px-7 py-4 rounded-xl text-xs font-semibold font-sans bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white shadow-electric-glow hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all transform hover:-translate-y-0.5 flex-shrink-0 relative z-10 cursor-pointer"
           >
-            <span>Start a Project on Contra</span>
+            <span>Start a Project</span>
             <ArrowUpRight className="w-4 h-4" />
           </a>
         </div>

@@ -1,14 +1,13 @@
 /**
- * CENTRALIZED CONTRA & CONTACT CONFIGURATION
+ * CENTRALIZED FREELANCE & CONTACT CONFIGURATION
  * 
  * All CTA buttons, email mailto links, and verified platform links across the website
  * dynamically read from this file.
  */
 
 export const contraConfig = {
-  // Official Contra Profile & Portfolio
-  profileUrl: "https://contra.com/Mayankk4rn/work?r=Mayankk4rn",
-  portfolioUrl: "https://contra.com/Mayankk4rn/work?r=Mayankk4rn",
+  // Official Portfolio Links
+  behanceUrl: "https://www.behance.net/mayankkarn3",
 
   // Professional Business Email
   email: "mayankk3n@gmail.com",
@@ -16,13 +15,13 @@ export const contraConfig = {
   // Profile Picture for About section (leave null to show studio director monogram badge)
   profileImage: null,
 
-  // Verified Channels (No invented placeholder handles)
+  // Verified Channels
   socials: [
     {
-      name: "Contra",
-      url: "https://contra.com/Mayankk4rn/work?r=Mayankk4rn",
-      label: "Official Portfolio & Booking",
-      badge: "Verified Platform"
+      name: "Behance",
+      url: "https://www.behance.net/mayankkarn3",
+      label: "behance.net/mayankkarn3",
+      badge: "Creative Portfolio"
     },
     {
       name: "Direct Email",
@@ -38,13 +37,13 @@ export const contraConfig = {
   location: "Worldwide / Remote",
   availability: "Available for Commissions & Commercial Projects",
   responseTime: "Under 24 Hours",
-  paymentProtection: "Contracts, Milestone Escrow & Invoicing securely powered by Contra",
+  paymentProtection: "Contracts, Milestone Escrow & Invoicing available across all major freelance platforms & direct client agreements",
 
   stats: [
     { label: "Pipeline", value: "AI + 3D Hybrid" },
     { label: "Turnaround", value: "3 to 10 Days" },
     { label: "Resolution", value: "4K Cinema / 60 FPS" },
-    { label: "Booking Platform", value: "Contra Verified" },
+    { label: "Availability", value: "Worldwide / Open" },
   ],
 
   packages: [
@@ -63,7 +62,7 @@ export const contraConfig = {
         "Master delivery in 4K UHD + multi-aspect cutdowns"
       ],
       idealFor: "Hardware, Luxury, Tech, Cosmetics, Consumer Brands",
-      ctaText: "Book on Contra"
+      ctaText: "Start Project"
     },
     {
       id: "ai-3d-narrative",
@@ -80,7 +79,7 @@ export const contraConfig = {
         "Full commercial broadcasting rights included"
       ],
       idealFor: "Music Videos, Fashion Films, Web3, Game Teasers",
-      ctaText: "Inquire on Contra"
+      ctaText: "Inquire Now"
     },
     {
       id: "viral-reels-pack",
@@ -97,7 +96,10 @@ export const contraConfig = {
         "Ready-to-post deliverables with source project files"
       ],
       idealFor: "Founders, DTC Brands, E-commerce, Creators",
-      ctaText: "Hire on Contra"
+      ctaText: "Book Package"
     }
   ]
 };
+
+// Backwards-compatible alias for multi-platform freelance configuration
+export const freelanceConfig = contraConfig;

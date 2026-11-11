@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { projectCategories } from '../data/projects.js';
+import { getOptimizedThumbnail, convertImageToWebP } from '../utils/imageOptimization.js';
 
 // Read environment variables (supports Vite browser runtime & test environments)
 const supabaseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || (typeof process !== 'undefined' ? process.env?.VITE_SUPABASE_URL : '');
@@ -221,10 +222,15 @@ async function getLocalProjects() {
               }
             }
 
+            const optimizedThumb = getOptimizedThumbnail(finalThumbUrl, p.id, p.title);
+            const activeThumb = optimizedThumb || finalThumbUrl;
+
             return {
               ...p,
               videoUrl: finalVideoUrl,
-              thumbnail: finalThumbUrl
+              thumbnail: activeThumb,
+              thumbnailUrl: activeThumb,
+              originalThumbnail: finalThumbUrl
             };
           })
         );
@@ -423,6 +429,8 @@ export async function getProjects(includeDrafts = false) {
           rawCloudProjects.map(async (item) => {
             const resolvedVideoUrl = await resolvePlayableUrl(item.video_url);
             const resolvedThumbnail = await resolvePlayableUrl(item.thumbnail_url);
+            const optimizedThumbnail = getOptimizedThumbnail(resolvedThumbnail || item.thumbnail_url, item.id, item.title);
+            const activeThumbnail = optimizedThumbnail || resolvedThumbnail || '';
             return {
               id: item.id,
               title: item.title,
@@ -437,7 +445,9 @@ export async function getProjects(includeDrafts = false) {
               displayOrder: typeof item.display_order === 'number' 
                 ? item.display_order 
                 : (item.display_order ? parseInt(item.display_order, 10) : 999),
-              thumbnail: resolvedThumbnail,
+              thumbnail: activeThumbnail,
+              thumbnailUrl: activeThumbnail,
+              originalThumbnail: resolvedThumbnail || '',
               videoUrl: resolvedVideoUrl,
               tagline: item.tagline || item.description || '',
               concept: item.concept || item.description || '',
@@ -557,6 +567,7 @@ async function uploadViaSdk(file, bucketName, filePath, onProgress) {
     .from(bucketName)
     .upload(filePath, file, {
       cacheControl: '3600',
+      contentType: file.type || (filePath.endsWith('.webp') ? 'image/webp' : undefined),
       upsert: true
     });
 
@@ -607,7 +618,7 @@ function uploadViaXhr(file, bucketName, filePath, token, onProgress) {
 
     const formData = new FormData();
     formData.append('cacheControl', '3600');
-    formData.append('', file);
+    formData.append('', file, filePath);
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable && typeof onProgress === 'function') {
@@ -675,8 +686,19 @@ export async function uploadMedia(file, mediaKind = 'video', onProgress) {
     throw new Error('Supabase is not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.');
   }
 
-  // Validate format and size
-  validateUploadFile(file, mediaKind);
+  // Permanent Automatic WebP Optimization for all thumbnail uploads
+  let fileToUpload = file;
+  if (mediaKind === 'thumbnail' || mediaKind.includes('thumb')) {
+    try {
+      fileToUpload = await convertImageToWebP(file, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
+    } catch (optErr) {
+      console.warn('Automatic WebP optimization fallback to original file:', optErr);
+      fileToUpload = file;
+    }
+  }
+
+  // Validate format and size on the actual file to upload
+  validateUploadFile(fileToUpload, mediaKind);
 
   // Exact bucket candidates with primary first
   const primaryBucket = mediaKind === 'video' ? BUCKET_VIDEOS : BUCKET_THUMBNAILS;
@@ -685,10 +707,10 @@ export async function uploadMedia(file, mediaKind = 'video', onProgress) {
     : [BUCKET_THUMBNAILS, 'thumbnails', 'images'];
 
   // Generate unique collision-free filename
-  const cleanBase = (file.name || `file_${Date.now()}`)
+  const cleanBase = (fileToUpload.name || `file_${Date.now()}`)
     .replace(/[^a-zA-Z0-9.-]/g, '_')
     .toLowerCase();
-  const fileExt = cleanBase.split('.').pop() || (mediaKind === 'video' ? 'mp4' : 'jpg');
+  const fileExt = cleanBase.split('.').pop() || (mediaKind === 'video' ? 'mp4' : 'webp');
   const filePath = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
 
   // Get active session token
@@ -708,14 +730,14 @@ export async function uploadMedia(file, mediaKind = 'video', onProgress) {
     try {
       // 1. Attempt streaming XHR upload with progress tracking
       try {
-        return await uploadViaXhr(file, bucketName, filePath, token, onProgress);
+        return await uploadViaXhr(fileToUpload, bucketName, filePath, token, onProgress);
       } catch (xhrErr) {
         if (isBucketNotFoundError(xhrErr)) {
           throw xhrErr;
         }
         console.warn(`XHR upload to bucket '${bucketName}' failed (${xhrErr.message}). Retrying via Supabase SDK...`);
         // 2. Reliable fallback: official Supabase Storage SDK upload
-        return await uploadViaSdk(file, bucketName, filePath, onProgress);
+        return await uploadViaSdk(fileToUpload, bucketName, filePath, onProgress);
       }
     } catch (err) {
       lastError = err;
@@ -782,6 +804,16 @@ export async function createProject(project, rawFiles = {}) {
 
   // Mode 1: Cloud Supabase Mode
   if (supabase) {
+    let finalVideoUrl = project.videoUrl;
+    let finalThumbUrl = project.thumbnail;
+
+    if (!finalVideoUrl && videoFile) {
+      finalVideoUrl = await uploadMedia(videoFile, 'video');
+    }
+    if (thumbFile && (!finalThumbUrl || finalThumbUrl.startsWith('blob:') || finalThumbUrl.startsWith('data:'))) {
+      finalThumbUrl = await uploadMedia(thumbFile, 'thumbnail');
+    }
+
     const safeDisplayOrder = Math.max(1, parseInt(project.displayOrder || project.display_order, 10) || 1);
     const payload = {
       title: project.title,
@@ -794,8 +826,8 @@ export async function createProject(project, rawFiles = {}) {
       display_order: safeDisplayOrder,
       featured: Boolean(project.featured),
       status: project.status || 'published',
-      thumbnail_url: project.thumbnail,
-      video_url: project.videoUrl,
+      thumbnail_url: finalThumbUrl || project.thumbnail,
+      video_url: finalVideoUrl || project.videoUrl,
       tagline: project.tagline || project.description || '',
       concept: project.concept || project.description || '',
       tools: Array.isArray(project.tools) ? project.tools : [],
@@ -875,6 +907,16 @@ export async function updateProject(id, project, rawFiles = {}) {
 
   // Cloud update
   if (supabase && !id.startsWith('local-')) {
+    let finalVideoUrl = project.videoUrl || project.video_url;
+    let finalThumbUrl = project.thumbnail || project.thumbnail_url;
+
+    if (videoFile && (!finalVideoUrl || finalVideoUrl.startsWith('blob:') || finalVideoUrl.startsWith('data:'))) {
+      finalVideoUrl = await uploadMedia(videoFile, 'video');
+    }
+    if (thumbFile && (!finalThumbUrl || finalThumbUrl.startsWith('blob:') || finalThumbUrl.startsWith('data:'))) {
+      finalThumbUrl = await uploadMedia(thumbFile, 'thumbnail');
+    }
+
     const safeDisplayOrder = Math.max(1, parseInt(project.displayOrder || project.display_order, 10) || 1);
     const payload = {
       title: project.title,
@@ -887,8 +929,8 @@ export async function updateProject(id, project, rawFiles = {}) {
       display_order: safeDisplayOrder,
       featured: Boolean(project.featured),
       status: project.status || 'published',
-      thumbnail_url: project.thumbnail || project.thumbnail_url,
-      video_url: project.videoUrl || project.video_url,
+      thumbnail_url: finalThumbUrl || project.thumbnail || project.thumbnail_url,
+      video_url: finalVideoUrl || project.videoUrl || project.video_url,
       tagline: project.tagline || project.description || '',
       concept: project.concept || project.description || '',
       tools: Array.isArray(project.tools)
@@ -1066,6 +1108,8 @@ export async function getIntroVideo() {
       if (!error && record && record.video_url) {
         const resolvedVideoUrl = await resolvePlayableUrl(record.video_url);
         const resolvedThumbnail = await resolvePlayableUrl(record.thumbnail_url);
+        const optimizedThumbnail = getOptimizedThumbnail(resolvedThumbnail || record.thumbnail_url, record.id || 'creator-intro-showreel', record.title);
+        const activeThumbnail = optimizedThumbnail || resolvedThumbnail || '';
         return {
           id: record.id,
           title: record.title || 'A GLIMPSE INTO MY CREATIVE WORLD.',
@@ -1073,8 +1117,9 @@ export async function getIntroVideo() {
           aspectRatio: record.aspect_ratio || '16:9',
           duration: record.duration || '0:30',
           videoUrl: resolvedVideoUrl,
-          thumbnail: resolvedThumbnail || '',
-          thumbnailUrl: resolvedThumbnail || '',
+          thumbnail: activeThumbnail,
+          thumbnailUrl: activeThumbnail,
+          originalThumbnail: resolvedThumbnail || '',
           updatedAt: record.created_at,
           isCloud: true
         };

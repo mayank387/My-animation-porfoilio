@@ -72,7 +72,7 @@ export default function Navbar({ onOpenAdmin }) {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-xs font-medium">Available on Contra</span>
+            <span className="text-xs font-medium">Available for Freelance</span>
           </div>
 
           {/* Upload / Studio CMS Button */}
@@ -87,15 +87,13 @@ export default function Navbar({ onOpenAdmin }) {
             <span>Upload Work</span>
           </button>
 
-          {/* Direct Contra Button */}
+          {/* Direct Contact / Hire Action Button */}
           <a
-            href={contraConfig.profileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#contact"
             className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold font-sans bg-gradient-to-r from-electric-indigo to-electric-blue text-white shadow-electric-glow hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all transform hover:-translate-y-0.5 cursor-pointer"
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Hire on Contra</span>
+            <span>Start a Project</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -115,13 +113,11 @@ export default function Navbar({ onOpenAdmin }) {
           </button>
 
           <a
-            href={contraConfig.profileUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View Mayank's Profile and Hire on Contra"
+            href="#contact"
+            aria-label="Start a freelance project with Mayank"
             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-electric-indigo text-white flex items-center gap-1"
           >
-            <span>Contra</span>
+            <span>Hire Me</span>
             <ArrowUpRight className="w-3 h-3" />
           </a>
 
@@ -173,13 +169,12 @@ export default function Navbar({ onOpenAdmin }) {
             </div>
 
             <a
-              href={contraConfig.profileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#contact"
+              onClick={() => setMobileMenuOpen(false)}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-electric-indigo to-electric-blue text-white font-sans font-semibold text-sm shadow-electric-glow"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>Book / Hire on Contra</span>
+              <span>Start a Project / Hire Me</span>
               <ArrowUpRight className="w-4 h-4" />
             </a>
           </div>
