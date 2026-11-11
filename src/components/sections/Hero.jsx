@@ -253,46 +253,55 @@ export default function Hero({
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.35 }}
-              className="pt-1 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3.5"
+              className="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg"
             >
               {/* CTA 1: Explore Work */}
               <button
                 type="button"
                 onClick={handleScrollToShowcase}
                 aria-label="Explore My Work"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-orange-500/40 backdrop-blur-md transition-all shadow-lg group cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-orange-500/40 backdrop-blur-md transition-all shadow-lg group cursor-pointer order-1"
               >
                 <Play className="w-4 h-4 text-studio-orange fill-current group-hover:scale-110 transition-transform" />
                 <span>Explore My Work</span>
                 <ChevronDown className="w-4 h-4 text-slate-400 group-hover:translate-y-0.5 transition-transform" />
               </button>
 
-              {/* CTA 2: Hire Me on Behance */}
+              {/* CTA 2: Hire me on Behance */}
               <a
                 href={siteConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Hire Mayank on Behance"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-[#1769FF] hover:bg-[#0056eb] text-white shadow-[0_0_25px_rgba(23,105,255,0.4)] hover:shadow-[0_0_35px_rgba(23,105,255,0.65)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer border border-blue-400/30"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-[#1769FF] hover:bg-[#0056eb] text-white shadow-[0_0_25px_rgba(23,105,255,0.4)] hover:shadow-[0_0_35px_rgba(23,105,255,0.65)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer border border-blue-400/30 order-2"
               >
-                <svg className="w-4 h-4 fill-current flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M22 7h-7v-2h7v2zm1.726 10c-.442 1.297-2.029 3-4.976 3-3.419 0-5.75-2.367-5.75-5.75 0-3.383 2.331-5.75 5.75-5.75 3.419 0 5.75 2.367 5.75 5.75 0 .239-.018.513-.042.75h-8.878c.096 1.691 1.401 2.95 3.327 2.95 1.546 0 2.502-.676 2.869-1.25h1.996zm-7.146-4.25h5.45c-.147-1.464-1.282-2.35-2.677-2.35-1.42 0-2.613.886-2.773 2.35zm-8.58 7.25h-8v-14h7.525c2.458 0 4.225.867 4.225 3.342 0 1.564-.858 2.55-1.925 2.992 1.475.483 2.275 1.708 2.275 3.408 0 2.75-2.025 4.258-4.1 4.258zm-5.4-8.3h4.625c1.175 0 2.1-.55 2.1-1.75 0-1.125-.875-1.625-2.05-1.625h-4.675v3.375zm0 5.85h4.825c1.375 0 2.25-.65 2.25-1.95 0-1.25-.9-1.9-2.325-1.9h-4.75v3.85z"/>
-                </svg>
-                <span>Hire Me on Behance</span>
+                <span>Hire me on Behance</span>
                 <ArrowUpRight className="w-4 h-4" />
               </a>
 
-              {/* CTA 4: Upload Work / Studio CMS */}
+              {/* CTA 3: Upload Work / Studio CMS */}
               <button
                 type="button"
                 onClick={onOpenAdminUpload}
                 aria-label="Upload Work to Studio CMS"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-orange-500/40 backdrop-blur-md transition-all shadow-md group cursor-pointer"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-orange-500/40 backdrop-blur-md transition-all shadow-md group cursor-pointer order-4 sm:order-3"
                 title="Upload Videos & Manage Portfolio"
               >
                 <UploadCloud className="w-4 h-4 text-studio-orange group-hover:scale-110 transition-transform" />
                 <span>Upload Work</span>
               </button>
+
+              {/* CTA 4: Hire me on contra (Positioned directly below Hire me on Behance) */}
+              <a
+                href={siteConfig.contraUrl || siteConfig.profileUrl || "https://contra.com/Mayankk4rn/work?r=Mayankk4rn"}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Hire Mayank on Contra"
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white shadow-electric-glow hover:shadow-[0_0_35px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer border border-indigo-400/30 order-3 sm:order-4"
+              >
+                <span>Hire me on contra</span>
+                <ArrowUpRight className="w-4 h-4" />
+              </a>
             </motion.div>
 
           </div>

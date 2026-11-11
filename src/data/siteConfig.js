@@ -8,6 +8,8 @@
 export const siteConfig = {
   // Official Portfolio Links
   behanceUrl: "https://www.behance.net/mayankkarn3",
+  contraUrl: "https://contra.com/Mayankk4rn/work?r=Mayankk4rn",
+  profileUrl: "https://contra.com/Mayankk4rn/work?r=Mayankk4rn",
 
   // Professional Business Email
   email: "mayankk3n@gmail.com",
@@ -22,6 +24,12 @@ export const siteConfig = {
       url: "https://www.behance.net/mayankkarn3",
       label: "behance.net/mayankkarn3",
       badge: "Creative Portfolio"
+    },
+    {
+      name: "Contra",
+      url: "https://contra.com/Mayankk4rn/work?r=Mayankk4rn",
+      label: "contra.com/Mayankk4rn",
+      badge: "Verified Platform"
     },
     {
       name: "Direct Email",
