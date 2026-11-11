@@ -4,7 +4,6 @@ import {
   Sparkles, ShieldCheck, ArrowUpRight, Film, 
   Cpu, Box 
 } from 'lucide-react';
-import { contraConfig } from '../../data/contraConfig';
 
 export default function About() {
   return (

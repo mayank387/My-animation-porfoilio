@@ -5,7 +5,6 @@ import {
   ChevronLeft, ChevronRight, Sparkles, Layers, CheckCircle2, 
   Info, ExternalLink, Film, RotateCcw
 } from 'lucide-react';
-import { contraConfig } from '../../data/contraConfig';
 import Badge from './Badge';
 import { getOptimizedThumbnail } from '../../utils/imageOptimization';
 

@@ -3,13 +3,13 @@ import {
   ArrowUpRight, Copy, Check, ShieldCheck, Mail, Film, 
   ExternalLink, Briefcase 
 } from 'lucide-react';
-import { contraConfig } from '../../data/contraConfig';
+import { siteConfig } from '../../data/siteConfig';
 
 export default function Footer({ onOpenAdmin }) {
   const [copied, setCopied] = useState(false);
 
   const copyEmail = () => {
-    navigator.clipboard.writeText(contraConfig.email);
+    navigator.clipboard.writeText(siteConfig.email);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -94,7 +94,7 @@ export default function Footer({ onOpenAdmin }) {
 
               {/* Button 2: Platform Profile (Behance) */}
               <a
-                href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
+                href={siteConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Hire Mayank on Behance"
@@ -110,13 +110,13 @@ export default function Footer({ onOpenAdmin }) {
               {/* Clickable Email mailto link with Copy action */}
               <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 text-xs font-sans text-slate-300 transition-colors">
                 <a
-                  href={`mailto:${contraConfig.email}`}
-                  aria-label={`Send project email to ${contraConfig.email}`}
+                  href={`mailto:${siteConfig.email}`}
+                  aria-label={`Send project email to ${siteConfig.email}`}
                   className="flex items-center gap-2 truncate text-slate-300 hover:text-white transition-colors group font-normal"
                   title="Send email to mayankk3n@gmail.com"
                 >
                   <Mail className="w-3.5 h-3.5 text-electric-blue flex-shrink-0" />
-                  <span className="truncate">{contraConfig.email}</span>
+                  <span className="truncate">{siteConfig.email}</span>
                 </a>
 
                 <button
@@ -145,7 +145,7 @@ export default function Footer({ onOpenAdmin }) {
           <span className="text-slate-400 font-medium">Official Portfolios & Channels:</span>
           <div className="flex flex-wrap items-center gap-6">
             <a
-              href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
+              href={siteConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Mayank's official Behance profile"
@@ -159,12 +159,12 @@ export default function Footer({ onOpenAdmin }) {
             </a>
 
             <a
-              href={`mailto:${contraConfig.email}`}
-              aria-label={`Send email to ${contraConfig.email}`}
+              href={`mailto:${siteConfig.email}`}
+              aria-label={`Send email to ${siteConfig.email}`}
               className="text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group font-medium"
             >
               <Mail className="w-3.5 h-3.5 text-electric-blue" />
-              <span>{contraConfig.email}</span>
+              <span>{siteConfig.email}</span>
               <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </a>
           </div>

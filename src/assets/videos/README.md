@@ -63,14 +63,14 @@ Every project is labeled with a clear **`specType`** (e.g. *Portfolio Concept Co
 
 ---
 
-## 💼 Connecting Your Contra Account
-Open `src/data/contraConfig.js` and update your Contra profile link:
+## 💼 Connecting Your Behance & Freelance Profiles
+Open `src/data/siteConfig.js` and update your Behance profile and email links:
 ```javascript
-export const contraConfig = {
-  profileUrl: "https://contra.com/YOUR_USERNAME",
-  directMessageUrl: "https://contra.com/YOUR_USERNAME?inquiry=true",
+export const siteConfig = {
+  behanceUrl: "https://www.behance.net/mayankkarn3",
+  email: "mayankk3n@gmail.com",
   artistName: "Mayank",
   ...
 };
 ```
-Every CTA button ("Hire on Contra", "Book on Contra", "Inquire on Contra") across the portfolio will immediately direct potential clients to your Contra page with verified milestone protection!
+Every CTA button ("Hire Me on Behance", "Send Project Brief") across the portfolio will direct potential clients to your verified profiles and direct communication channels.

@@ -5,7 +5,7 @@ import {
   Send, Sparkles, MessageSquare, ExternalLink, Globe,
   Clock, CheckCircle2, ChevronRight, Briefcase
 } from 'lucide-react';
-import { contraConfig } from '../../data/contraConfig';
+import { siteConfig } from '../../data/siteConfig';
 import Badge from '../ui/Badge';
 
 export default function Contact() {
@@ -16,7 +16,7 @@ export default function Contact() {
   const [projectMessage, setProjectMessage] = useState('');
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText(contraConfig.email);
+    navigator.clipboard.writeText(siteConfig.email);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -27,7 +27,7 @@ export default function Contact() {
     const body = encodeURIComponent(
       `Hello Mayank,\n\nI am interested in collaborating on a video project.\n\nName: ${clientName}\nEmail: ${clientEmail}\nService Required: ${projectType}\n\nProject Details:\n${projectMessage}\n\nLooking forward to hearing back!`
     );
-    window.open(`mailto:${contraConfig.email}?subject=${subject}&body=${body}`, '_blank');
+    window.open(`mailto:${siteConfig.email}?subject=${subject}&body=${body}`, '_blank');
   };
 
   return (
@@ -89,7 +89,7 @@ export default function Contact() {
           >
             {/* Action 1: Send Project Brief */}
             <a
-              href={`mailto:${contraConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
+              href={`mailto:${siteConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl text-sm font-semibold font-sans bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white shadow-electric-glow hover:shadow-[0_0_35px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
             >
               <Mail className="w-4 h-4 text-white" />
@@ -99,7 +99,7 @@ export default function Contact() {
 
             {/* Action 2: Hire Me on Behance */}
             <a
-              href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
+              href={siteConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Hire Mayank on Behance"
@@ -114,10 +114,10 @@ export default function Contact() {
 
             {/* Clickable Mailto Email Button */}
             <a
-              href={`mailto:${contraConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
+              href={`mailto:${siteConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl text-sm font-semibold font-sans bg-white/[0.03] hover:bg-white/[0.08] text-slate-200 hover:text-white border border-white/10 hover:border-electric-blue/40 backdrop-blur-md transition-all transform hover:-translate-y-0.5 active:translate-y-0 group cursor-pointer"
             >
-              <span className="font-mono text-xs text-electric-blue">{contraConfig.email}</span>
+              <span className="font-mono text-xs text-electric-blue">{siteConfig.email}</span>
             </a>
           </motion.div>
         </div>
@@ -152,12 +152,12 @@ export default function Contact() {
               {/* Clickable Email Address using mailto: with One-Click Copy */}
               <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-electric-blue/30 transition-colors flex items-center justify-between gap-3">
                 <a
-                  href={`mailto:${contraConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
+                  href={`mailto:${siteConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
                   className="font-mono text-sm text-white hover:text-electric-blue transition-colors truncate flex items-center gap-2 group"
                   title="Click to email mayankk3n@gmail.com"
                 >
                   <Mail className="w-4 h-4 text-electric-blue flex-shrink-0" />
-                  <span className="truncate">{contraConfig.email}</span>
+                  <span className="truncate">{siteConfig.email}</span>
                   <ExternalLink className="w-3 h-3 text-slate-500 group-hover:text-electric-blue opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                 </a>
 
@@ -181,7 +181,7 @@ export default function Contact() {
               {/* Direct Mail Action Buttons */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                 <a
-                  href={`mailto:${contraConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
+                  href={`mailto:${siteConfig.email}?subject=Project%20Inquiry%20-%20Creative%20Video%20Production`}
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-white text-xs font-mono font-medium border border-white/10 hover:border-white/20 transition-all transform hover:-translate-y-0.5"
                 >
                   <Mail className="w-3.5 h-3.5 text-electric-blue" />
@@ -189,7 +189,7 @@ export default function Contact() {
                 </a>
 
                 <a
-                  href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
+                  href={siteConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#1769FF]/15 hover:bg-[#1769FF]/25 text-white text-xs font-mono font-medium border border-[#1769FF]/30 hover:border-[#1769FF]/50 transition-all transform hover:-translate-y-0.5"
@@ -227,7 +227,7 @@ export default function Contact() {
                   <MessageSquare className="w-4 h-4" />
                   <span>Send a Message</span>
                 </div>
-                <span className="text-[11px] font-mono text-slate-400">Dispatches to {contraConfig.email}</span>
+                <span className="text-[11px] font-mono text-slate-400">Dispatches to {siteConfig.email}</span>
               </div>
 
               <form onSubmit={handleQuickMailSubmit} className="mt-6 space-y-5">
@@ -306,7 +306,7 @@ export default function Contact() {
                   </button>
 
                   <a
-                    href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
+                    href={siteConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs font-mono text-slate-400 hover:text-electric-blue transition-colors flex items-center gap-1.5 group cursor-pointer"
@@ -333,7 +333,7 @@ export default function Contact() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-4 max-w-2xl mx-auto">
-            {contraConfig.socials.map((social) => (
+            {siteConfig.socials.map((social) => (
               <a
                 key={social.name}
                 href={social.url}

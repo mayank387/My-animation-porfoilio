@@ -5,7 +5,6 @@ import {
   ShoppingBag, Film, Smartphone, Trees, Layers 
 } from 'lucide-react';
 import { services } from '../../data/services';
-import { contraConfig } from '../../data/contraConfig';
 
 export default function Services() {
   const getServiceIcon = (iconName) => {

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Film, Sparkles, ArrowUpRight, ShieldCheck, UploadCloud, Clock } from 'lucide-react';
 import { projectCategories } from '../../data/projects';
-import { contraConfig } from '../../data/contraConfig';
 import VideoCard from '../ui/VideoCard';
 
 export default function Showcase({ projects: customProjects, onSelectProject, onOpenAdmin }) {

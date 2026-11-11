@@ -5,7 +5,7 @@ import {
   Volume2, VolumeX, Maximize2, Sparkles, UploadCloud, 
   ChevronDown, Tv
 } from 'lucide-react';
-import { contraConfig } from '../../data/contraConfig';
+import { siteConfig } from '../../data/siteConfig';
 import { getOptimizedThumbnail, THUMBNAIL_DIMENSIONS } from '../../utils/imageOptimization';
 import CinematicBackground from '../ui/CinematicBackground';
 
@@ -269,7 +269,7 @@ export default function Hero({
 
               {/* CTA 2: Hire Me on Behance */}
               <a
-                href={contraConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
+                href={siteConfig.behanceUrl || "https://www.behance.net/mayankkarn3"}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Hire Mayank on Behance"
@@ -570,7 +570,7 @@ export default function Hero({
           transition={{ duration: 0.8, delay: 0.45 }}
           className="mt-14 sm:mt-16 pt-8 border-t border-white/[0.08] grid grid-cols-2 sm:grid-cols-4 gap-6 text-center"
         >
-          {contraConfig.stats.map((stat, i) => (
+          {siteConfig.stats.map((stat, i) => (
             <div key={i} className="space-y-1">
               <span className="text-xs font-sans text-studio-muted block">{stat.label}</span>
               <span className="text-base sm:text-lg font-heading font-bold text-white tracking-tight">{stat.value}</span>

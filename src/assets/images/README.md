@@ -5,8 +5,8 @@ Place your custom image assets in this folder.
 ### 1. Profile Picture
 - Place your photo here: `src/assets/images/profile.jpg`
 - To use it, you can either:
-  - Option A: Set `profileImage: "/src/assets/images/profile.jpg"` in `src/data/contraConfig.js`
-  - Option B: Use an image hosted online (e.g., Unsplash, Cloudinary, AWS S3) and paste the URL in `src/data/contraConfig.js`.
+  - Option A: Set `profileImage: "/src/assets/images/profile.jpg"` in `src/data/siteConfig.js`
+  - Option B: Use an image hosted online (e.g., Unsplash, Cloudinary, AWS S3) and paste the URL in `src/data/siteConfig.js`.
 
 ### 2. Project Poster Thumbnails
 - Place your 16:9 and 9:16 video posters here, for example:

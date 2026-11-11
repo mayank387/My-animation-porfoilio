@@ -2,7 +2,6 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { GitBranch, Clock, Wrench, ShieldCheck, ArrowRight } from 'lucide-react';
 import { pipelineSteps } from '../../data/pipeline';
-import { contraConfig } from '../../data/contraConfig';
 
 export default function Pipeline() {
   return (

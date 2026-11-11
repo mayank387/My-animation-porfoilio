@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowUpRight, ShieldCheck, Film, UploadCloud } from 'lucide-react';
-import { contraConfig } from '../../data/contraConfig';
 
 export default function Navbar({ onOpenAdmin }) {
   const [isScrolled, setIsScrolled] = useState(false);
