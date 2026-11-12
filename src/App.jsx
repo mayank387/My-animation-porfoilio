@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { UploadCloud } from 'lucide-react';
+// Core above-the-fold critical components
 import Navbar from './components/layout/Navbar';
 import Hero from './components/sections/Hero';
-import Showcase from './components/sections/Showcase';
-import About from './components/sections/About';
-import Services from './components/sections/Services';
-import Pipeline from './components/sections/Pipeline';
-import TechStack from './components/sections/TechStack';
-import Contact from './components/sections/Contact';
-import Footer from './components/layout/Footer';
+
+// Code-split below-the-fold sections to slash initial mobile JavaScript
+const Showcase = lazy(() => import('./components/sections/Showcase'));
+const About = lazy(() => import('./components/sections/About'));
+const Services = lazy(() => import('./components/sections/Services'));
+const Pipeline = lazy(() => import('./components/sections/Pipeline'));
+const TechStack = lazy(() => import('./components/sections/TechStack'));
+const Contact = lazy(() => import('./components/sections/Contact'));
+const Footer = lazy(() => import('./components/layout/Footer'));
 
 // Code-split heavy interactive modals and admin portal to keep initial mobile bundle ultra-light
 const VideoModal = lazy(() => import('./components/ui/VideoModal'));
@@ -72,13 +75,17 @@ export default function App() {
     }
   }, []);
 
-  // Mount initialization
+  // Mount initialization: Load public portfolio data
   useEffect(() => {
     loadPublicProjects();
     loadIntroShowreel();
+  }, [loadPublicProjects, loadIntroShowreel]);
+
+  // Admin Auth: Only check and listen when visiting /admin
+  useEffect(() => {
+    if (!isAdminView) return;
     checkAdminAuth();
 
-    // Listen to Supabase auth state change
     const { data: authListener } = onAuthStateChange((event, session) => {
       if (session?.user) {
         setAdminUser(session.user);
@@ -90,7 +97,7 @@ export default function App() {
     return () => {
       authListener?.subscription?.unsubscribe();
     };
-  }, [loadPublicProjects, loadIntroShowreel, checkAdminAuth]);
+  }, [isAdminView, checkAdminAuth]);
 
   // GA4 Analytics Initialization & Traffic Source Detection
   useEffect(() => {
@@ -236,16 +243,18 @@ export default function App() {
           onOpenFeaturedProject={handleOpenFeaturedReel} 
           featuredProject={projectsList.find(p => p.featured) || projectsList[0] || null}
         />
-        <Showcase 
-          projects={projectsList} 
-          onSelectProject={handleSelectProject} 
-          onOpenAdmin={navigateToAdmin}
-        />
-        <About />
-        <Services />
-        <Pipeline />
-        <TechStack />
-        <Contact />
+        <Suspense fallback={<div className="min-h-[400px]" />}>
+          <Showcase 
+            projects={projectsList} 
+            onSelectProject={handleSelectProject} 
+            onOpenAdmin={navigateToAdmin}
+          />
+          <About />
+          <Services />
+          <Pipeline />
+          <TechStack />
+          <Contact />
+        </Suspense>
       </main>
 
       {/* Floating Quick Upload / Studio CMS Button */}
@@ -261,8 +270,10 @@ export default function App() {
         <span className="text-[10px] font-mono text-slate-400 group-hover:text-white/80 bg-white/10 px-1.5 py-0.5 rounded">Admin</span>
       </button>
 
-      {/* Footer */}
-      <Footer onOpenAdmin={navigateToAdmin} />
+      {/* Footer (Lazy Loaded) */}
+      <Suspense fallback={null}>
+        <Footer onOpenAdmin={navigateToAdmin} />
+      </Suspense>
 
       {/* Theater Video Modal with Playlist Navigation & Full Controls (Lazy loaded on demand) */}
       {isModalOpen && (

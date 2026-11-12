@@ -1,5 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useRef, useState, useEffect, lazy, Suspense } from 'react';
 import { 
   ArrowUpRight, ShieldCheck, Film, Play, Pause, 
   Volume2, VolumeX, Maximize2, Sparkles, UploadCloud, 
@@ -7,7 +6,9 @@ import {
 } from 'lucide-react';
 import { siteConfig } from '../../data/siteConfig';
 import { getOptimizedThumbnail, THUMBNAIL_DIMENSIONS } from '../../utils/imageOptimization';
-import CinematicBackground from '../ui/CinematicBackground';
+
+// Lazy-load Three.js 3D background only on desktop during idle time (saves 538 kB on mobile)
+const LazyCinematicBackground = lazy(() => import('../ui/CinematicBackground'));
 
 export default function Hero({ 
   introVideo, 
@@ -24,6 +25,22 @@ export default function Hero({
   const [showControls, setShowControls] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [posterError, setPosterError] = useState(false);
+  const [load3D, setLoad3D] = useState(false);
+
+  // Defer heavy Three.js 3D WebGL background to desktop devices during idle time (prevents mobile TBT)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isDesktop = window.innerWidth >= 768 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!isDesktop) return;
+
+    if ('requestIdleCallback' in window) {
+      const handle = window.requestIdleCallback(() => setLoad3D(true), { timeout: 2500 });
+      return () => window.cancelIdleCallback(handle);
+    } else {
+      const timer = setTimeout(() => setLoad3D(true), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const hasVideo = Boolean(introVideo?.videoUrl);
   const rawPoster = introVideo?.thumbnailUrl || introVideo?.thumbnail || '';
@@ -182,8 +199,16 @@ export default function Hero({
 
   return (
     <section id="showreel" className="relative min-h-screen pt-28 sm:pt-32 pb-16 lg:pb-24 flex flex-col justify-center overflow-hidden bg-studio-bg">
-      {/* Cinematic Animated Background with 3D objects, particles & depth */}
-      <CinematicBackground />
+      {/* Cinematic Background: Pure CSS Ambient Glow on Mobile (< 768px), Lazy WebGL on Desktop */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[350px] sm:w-[650px] h-[350px] sm:h-[650px] bg-studio-orange/10 blur-[130px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-1/4 -right-20 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-electric-indigo/10 blur-[120px] rounded-full pointer-events-none" />
+        {load3D && (
+          <Suspense fallback={null}>
+            <LazyCinematicBackground />
+          </Suspense>
+        )}
+      </div>
 
       <div className="max-w-7xl xl:max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         
@@ -196,12 +221,7 @@ export default function Hero({
           <div className="lg:col-span-5 flex flex-col justify-center text-left space-y-6">
             
             {/* Availability Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="flex items-center"
-            >
+            <div className="flex items-center">
               <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md shadow-2xl">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -211,50 +231,29 @@ export default function Hero({
                   Available for Commissions • Worldwide Freelance Director
                 </span>
               </div>
-            </motion.div>
+            </div>
 
-            {/* Main Editorial Studio Headline (Eager rendered for instant LCP) */}
-            <motion.h1
-              initial={{ y: 15 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-              className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-heading font-extrabold tracking-[-0.03em] text-white leading-[1.08]"
-            >
+            {/* Main Editorial Studio Headline (Eager static for instant FCP/LCP) */}
+            <h1 className="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-heading font-extrabold tracking-[-0.03em] text-white leading-[1.08]">
               Bringing Ideas to Life{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-orange-500">
                 Through Motion.
               </span>
-            </motion.h1>
+            </h1>
 
             {/* Specialization Pill */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-studio-charcoal/80 border border-white/10 backdrop-blur-sm text-xs sm:text-sm font-sans font-medium text-amber-300 shadow-sm">
-                <Sparkles className="w-3.5 h-3.5 text-studio-orange flex-shrink-0" />
-                <span>Cinematic 3D Animation | AI Video | Commercials</span>
-              </div>
-            </motion.div>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-studio-charcoal/80 border border-white/10 backdrop-blur-sm text-xs sm:text-sm font-sans font-medium text-amber-300 shadow-sm self-start">
+              <Sparkles className="w-3.5 h-3.5 text-studio-orange flex-shrink-0" />
+              <span>Cinematic 3D Animation | AI Video | Commercials</span>
+            </div>
 
             {/* Editorial Paragraph */}
-            <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.25 }}
-              className="text-sm sm:text-base text-studio-muted font-normal leading-relaxed"
-            >
+            <p className="text-sm sm:text-base text-studio-muted font-normal leading-relaxed">
               I create visually engaging advertisements and cinematic videos for brands, combining photorealistic 3D motion design, generative AI pipelines, and commercial post-production to turn ambitious concepts into unforgettable visual stories.
-            </motion.p>
+            </p>
 
             {/* Functional Call-to-Actions */}
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.35 }}
-              className="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg"
-            >
+            <div className="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
               {/* CTA 1: Explore Work */}
               <button
                 type="button"
@@ -302,19 +301,14 @@ export default function Hero({
                 <span>Hire me on contra</span>
                 <ArrowUpRight className="w-4 h-4" />
               </a>
-            </motion.div>
+            </div>
 
           </div>
 
           {/* ========================================================= */}
           {/* RIGHT COLUMN: EXPANSIVE 16:9 VIDEO PLAYER (7 COLS)        */}
           {/* ========================================================= */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="lg:col-span-7 w-full flex flex-col justify-center"
-          >
+          <div className="lg:col-span-7 w-full flex flex-col justify-center">
             {/* Outer 16:9 Frame: Fills the entire 7-column desktop width */}
             <div
               ref={containerRef}
@@ -327,13 +321,13 @@ export default function Hero({
                 /* Real Uploaded Intro Video Display */
                 <>
                   {/* Poster Thumbnail (High priority LCP optimization - WebP with fallback) */}
-                  {introPoster && !posterError && (
+                  {!posterError && (
                     <picture className={`absolute inset-0 w-full h-full pointer-events-none z-10 transition-opacity duration-700 ${
                       isPlaying ? 'opacity-0' : 'opacity-100'
                     }`}>
                       <source srcSet="/thumbnails/intro_showreel_poster.webp" type="image/webp" />
                       <img
-                        src={introPoster}
+                        src={introPoster || "/thumbnails/intro_showreel_poster.webp"}
                         alt="Director Showreel Intro Poster"
                         width={THUMBNAIL_DIMENSIONS.width}
                         height={THUMBNAIL_DIMENSIONS.height}
@@ -357,14 +351,14 @@ export default function Hero({
                   <video
                     ref={videoRef}
                     src={introVideo.videoUrl}
-                    poster={!posterError ? introPoster : undefined}
+                    poster={introPoster || "/thumbnails/intro_showreel_poster.webp"}
                     width={THUMBNAIL_DIMENSIONS.width}
                     height={THUMBNAIL_DIMENSIONS.height}
                     autoPlay
                     muted={isMuted}
                     playsInline
                     loop
-                    preload="auto"
+                    preload="metadata"
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onError={(e) => console.warn('Hero video playback notice:', e)}
@@ -499,11 +493,26 @@ export default function Hero({
                   </div>
                 </>
               ) : (
-                /* Expansive 16:9 Empty State Placeholder */
+                /* Expansive 16:9 Empty State Placeholder with Instant Poster Paint */
                 <div className="absolute inset-0 p-8 sm:p-10 flex flex-col justify-between bg-gradient-to-br from-studio-card via-studio-surface to-black text-center overflow-hidden">
+                  {/* Instant LCP Poster Background */}
+                  <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                    <source srcSet="/thumbnails/intro_showreel_poster.webp" type="image/webp" />
+                    <img
+                      src="/thumbnails/intro_showreel_poster.webp"
+                      alt="Director Showreel Intro Poster"
+                      width={THUMBNAIL_DIMENSIONS.width}
+                      height={THUMBNAIL_DIMENSIONS.height}
+                      fetchPriority="high"
+                      loading="eager"
+                      decoding="async"
+                      className="w-full h-full object-cover opacity-35"
+                    />
+                  </picture>
+
                   {/* Subtle Background Glow & Grid */}
-                  <div className="absolute inset-0 subtle-grid opacity-20 pointer-events-none" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-electric-indigo/15 blur-[80px] rounded-full pointer-events-none" />
+                  <div className="absolute inset-0 subtle-grid opacity-20 pointer-events-none z-1" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-electric-indigo/15 blur-[80px] rounded-full pointer-events-none z-1" />
 
                   {/* Top Badge */}
                   <div className="relative z-10 flex items-center justify-between">
@@ -568,24 +577,19 @@ export default function Hero({
               </span>
               <span className="text-slate-500">Commercial 3D & AI Production</span>
             </div>
-          </motion.div>
+          </div>
 
         </div>
 
         {/* Full-width Studio Specs Bar below hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.45 }}
-          className="mt-14 sm:mt-16 pt-8 border-t border-white/[0.08] grid grid-cols-2 sm:grid-cols-4 gap-6 text-center"
-        >
+        <div className="mt-14 sm:mt-16 pt-8 border-t border-white/[0.08] grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           {siteConfig.stats.map((stat, i) => (
             <div key={i} className="space-y-1">
               <span className="text-xs font-sans text-studio-muted block">{stat.label}</span>
               <span className="text-base sm:text-lg font-heading font-bold text-white tracking-tight">{stat.value}</span>
             </div>
           ))}
-        </motion.div>
+        </div>
 
       </div>
     </section>
