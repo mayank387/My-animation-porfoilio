@@ -46,45 +46,41 @@ export default function Hero({
   const rawPoster = introVideo?.thumbnailUrl || introVideo?.thumbnail || '';
   const introPoster = getOptimizedThumbnail(rawPoster, introVideo?.id || 'creator-intro-showreel', introVideo?.title || 'My Introduction video');
 
-  // 1. Instant Muted Autoplay on Mount & When Video URL is Available
+  // 1. Controlled Video Playback: Instant WebP poster for LCP, deferred streaming on mobile
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !hasVideo) return;
 
-    // Strict browser autoplay policy: must be muted, playsInline, and looping
+    // Strict browser playback policy: must be muted, playsInline, and looping
     video.muted = true;
     setIsMuted(true);
     video.loop = true;
     video.playsInline = true;
 
-    const startAutoplay = () => {
-      const playPromise = video.play();
+    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
+
+    const startPlayback = () => {
+      if (!videoRef.current) return;
+      const playPromise = videoRef.current.play();
       if (playPromise !== undefined) {
         playPromise
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch((err) => {
-            console.warn('Initial autoplay deferred by browser policy:', err);
-            // Fallback: start on first touch, click or scroll
-            const onFirstUserAction = () => {
-              if (videoRef.current) {
-                videoRef.current.muted = true;
-                videoRef.current.loop = true;
-                videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-              }
-              window.removeEventListener('click', onFirstUserAction);
-              window.removeEventListener('scroll', onFirstUserAction);
-              window.removeEventListener('touchstart', onFirstUserAction);
-            };
-            window.addEventListener('click', onFirstUserAction, { once: true });
-            window.addEventListener('scroll', onFirstUserAction, { once: true });
-            window.addEventListener('touchstart', onFirstUserAction, { once: true });
-          });
+          .then(() => setIsPlaying(true))
+          .catch(() => {});
       }
     };
 
-    startAutoplay();
+    if (isMobile) {
+      // On mobile: prioritize instant LCP image paint, defer video download until idle or tap
+      if ('requestIdleCallback' in window) {
+        const handle = window.requestIdleCallback(startPlayback, { timeout: 3500 });
+        return () => window.cancelIdleCallback(handle);
+      } else {
+        const timer = setTimeout(startPlayback, 2500);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      startPlayback();
+    }
   }, [hasVideo, introVideo?.videoUrl]);
 
   // 2. IntersectionObserver: Pause when scrolled far out of view, resume playing when visible
@@ -354,11 +350,10 @@ export default function Hero({
                     poster={introPoster || "/thumbnails/intro_showreel_poster.webp"}
                     width={THUMBNAIL_DIMENSIONS.width}
                     height={THUMBNAIL_DIMENSIONS.height}
-                    autoPlay
                     muted={isMuted}
                     playsInline
                     loop
-                    preload="metadata"
+                    preload="none"
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onError={(e) => console.warn('Hero video playback notice:', e)}

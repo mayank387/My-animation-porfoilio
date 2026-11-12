@@ -45,6 +45,12 @@ export const OPTIMIZED_PROJECT_IMAGES = [
     ids: ['dbbc5d37-e7de-4608-b236-4a9996d48cea'],
     titleKeywords: ['nirvana', 'boat', 'next-level audio'],
     signatures: ['1793960635207', 'ramddl']
+  },
+  {
+    webpPath: '/thumbnails/sneaker_fight.webp',
+    ids: ['a1a37843-488e-46c3-9de2-7a8149b45415'],
+    titleKeywords: ['sneaker', 'fight', 'power of every step'],
+    signatures: ['1794315569687', 'rnuiud']
   }
 ];
 

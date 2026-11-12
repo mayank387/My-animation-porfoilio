@@ -31,10 +31,14 @@ export default function VideoCard({ project, onSelect }) {
   const isFourThree = project.aspectRatio === "4:3";
   const optimizedThumbnail = getOptimizedThumbnail(project.thumbnail, project.id, project.title);
 
-  // IntersectionObserver for automatic autoplay & pause when visible in viewport
+  // IntersectionObserver for automatic autoplay & pause when visible in viewport (Desktop only, never mobile)
   useEffect(() => {
     const el = containerRef.current;
     if (!el || !project.videoUrl) return;
+
+    // Guard: Never auto-stream video files on mobile devices (saves multiple MBs of cellular data and network bandwidth)
+    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
+    if (isMobile) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
