@@ -26,6 +26,11 @@ export default function Hero({
   const [hasInteracted, setHasInteracted] = useState(false);
   const [posterError, setPosterError] = useState(false);
   const [load3D, setLoad3D] = useState(false);
+  const [videoMounted, setVideoMounted] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    // On desktop devices with pointer, mount video immediately for seamless autoplay
+    return window.innerWidth >= 768 && !window.matchMedia('(pointer: coarse)').matches;
+  });
 
   // Defer heavy Three.js 3D WebGL background to desktop devices during idle time (prevents mobile TBT)
   useEffect(() => {
@@ -46,47 +51,23 @@ export default function Hero({
   const rawPoster = introVideo?.thumbnailUrl || introVideo?.thumbnail || '';
   const introPoster = getOptimizedThumbnail(rawPoster, introVideo?.id || 'creator-intro-showreel', introVideo?.title || 'My Introduction video');
 
-  // 1. Controlled Video Playback: Instant WebP poster for LCP, deferred streaming on mobile
+  // Autoplay on desktop when mounted
   useEffect(() => {
+    if (!videoMounted || !videoRef.current || !hasVideo) return;
     const video = videoRef.current;
-    if (!video || !hasVideo) return;
-
-    // Strict browser playback policy: must be muted, playsInline, and looping
-    video.muted = true;
-    setIsMuted(true);
+    video.muted = isMuted;
     video.loop = true;
     video.playsInline = true;
-
-    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
-
-    const startPlayback = () => {
-      if (!videoRef.current) return;
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => setIsPlaying(true))
-          .catch(() => {});
-      }
-    };
-
-    if (isMobile) {
-      // On mobile: prioritize instant LCP image paint, defer video download until idle or tap
-      if ('requestIdleCallback' in window) {
-        const handle = window.requestIdleCallback(startPlayback, { timeout: 3500 });
-        return () => window.cancelIdleCallback(handle);
-      } else {
-        const timer = setTimeout(startPlayback, 2500);
-        return () => clearTimeout(timer);
-      }
-    } else {
-      startPlayback();
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => setIsPlaying(true)).catch(() => {});
     }
-  }, [hasVideo, introVideo?.videoUrl]);
+  }, [videoMounted, hasVideo, introVideo?.videoUrl]);
 
-  // 2. IntersectionObserver: Pause when scrolled far out of view, resume playing when visible
+  // IntersectionObserver: Pause when scrolled far out of view, resume playing when visible (desktop only)
   useEffect(() => {
     const el = containerRef.current;
-    if (!el || !hasVideo) return;
+    if (!el || !hasVideo || !videoMounted) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -111,13 +92,13 @@ export default function Hero({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasVideo]);
+  }, [hasVideo, videoMounted]);
 
-  // 3. Hover to Restart Video from 0 and keep playing in continuous loop
+  // 3. Hover to Restart Video from 0 and keep playing in continuous loop (desktop only)
   const handleMouseEnter = () => {
     setShowControls(true);
     const video = videoRef.current;
-    if (video) {
+    if (video && videoMounted) {
       try {
         video.currentTime = 0;
         setProgress(0);
@@ -134,29 +115,40 @@ export default function Hero({
 
   const handleMouseLeave = () => {
     setShowControls(false);
-    // Keep playing in loop — do not pause on mouse leave
+  };
+
+  // Play button / container click handler: mounts video on mobile and toggles play/pause
+  const handlePlayClick = (e) => {
+    if (e) e.stopPropagation();
+    setHasInteracted(true);
+    if (!videoMounted) {
+      setVideoMounted(true);
+    } else if (videoRef.current) {
+      if (videoRef.current.paused) {
+        videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      } else {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      }
+    }
   };
 
   const togglePlay = () => {
-    if (!videoRef.current) return;
-    setHasInteracted(true);
-    if (videoRef.current.paused) {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-    } else {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    }
+    handlePlayClick();
   };
 
   const toggleMute = (e) => {
     e.stopPropagation();
-    if (!videoRef.current) return;
     setHasInteracted(true);
-    const nextMuted = !videoRef.current.muted;
-    videoRef.current.muted = nextMuted;
+    const nextMuted = !isMuted;
     setIsMuted(nextMuted);
-    if (!isPlaying) {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+    if (!videoMounted) {
+      setVideoMounted(true);
+    } else if (videoRef.current) {
+      videoRef.current.muted = nextMuted;
+      if (!isPlaying) {
+        videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      }
     }
   };
 
@@ -310,7 +302,8 @@ export default function Hero({
               ref={containerRef}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              className="relative w-full aspect-video rounded-3xl overflow-hidden bg-black border border-white/15 hover:border-orange-500/40 transition-all duration-500 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] hover:shadow-[0_0_50px_rgba(255,107,0,0.18)] group flex items-center justify-center"
+              onClick={!videoMounted ? handlePlayClick : undefined}
+              className="relative w-full aspect-video rounded-3xl overflow-hidden bg-black border border-white/15 hover:border-orange-500/40 transition-all duration-500 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] hover:shadow-[0_0_50px_rgba(255,107,0,0.18)] group flex items-center justify-center cursor-pointer"
             >
               
               {hasVideo ? (
@@ -319,7 +312,7 @@ export default function Hero({
                   {/* Poster Thumbnail (High priority LCP optimization - WebP with fallback) */}
                   {!posterError && (
                     <picture className={`absolute inset-0 w-full h-full pointer-events-none z-10 transition-opacity duration-700 ${
-                      isPlaying ? 'opacity-0' : 'opacity-100'
+                      isPlaying && videoMounted ? 'opacity-0' : 'opacity-100'
                     }`}>
                       <source srcSet="/thumbnails/intro_showreel_poster.webp" type="image/webp" />
                       <img
@@ -343,38 +336,41 @@ export default function Hero({
                     </picture>
                   )}
 
-                  {/* HTML5 Video Player */}
-                  <video
-                    ref={videoRef}
-                    src={introVideo.videoUrl}
-                    poster={introPoster || "/thumbnails/intro_showreel_poster.webp"}
-                    width={THUMBNAIL_DIMENSIONS.width}
-                    height={THUMBNAIL_DIMENSIONS.height}
-                    muted={isMuted}
-                    playsInline
-                    loop
-                    preload="none"
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    onError={(e) => console.warn('Hero video playback notice:', e)}
-                    onTimeUpdate={handleTimeUpdate}
-                    onEnded={() => {
-                      // Infinite loop safeguard
-                      if (videoRef.current) {
-                        videoRef.current.currentTime = 0;
-                        videoRef.current.play().catch(() => {});
-                      }
-                    }}
-                    onLoadedMetadata={() => {
-                      if (videoRef.current) {
-                        videoRef.current.muted = true;
-                        videoRef.current.loop = true;
-                        videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-                      }
-                    }}
-                    onClick={togglePlay}
-                    className="w-full h-full object-cover cursor-pointer"
-                  />
+                  {/* HTML5 Video Player - Mounted on desktop immediately; mounted on mobile only on user tap to protect LCP */}
+                  {videoMounted && (
+                    <video
+                      ref={videoRef}
+                      src={introVideo.videoUrl}
+                      poster={introPoster || "/thumbnails/intro_showreel_poster.webp"}
+                      width={THUMBNAIL_DIMENSIONS.width}
+                      height={THUMBNAIL_DIMENSIONS.height}
+                      autoPlay
+                      muted={isMuted}
+                      playsInline
+                      loop
+                      preload="auto"
+                      onPlay={() => setIsPlaying(true)}
+                      onPause={() => setIsPlaying(false)}
+                      onError={(e) => console.warn('Hero video playback notice:', e)}
+                      onTimeUpdate={handleTimeUpdate}
+                      onEnded={() => {
+                        // Infinite loop safeguard
+                        if (videoRef.current) {
+                          videoRef.current.currentTime = 0;
+                          videoRef.current.play().catch(() => {});
+                        }
+                      }}
+                      onLoadedMetadata={() => {
+                        if (videoRef.current) {
+                          videoRef.current.muted = true;
+                          videoRef.current.loop = true;
+                          videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+                        }
+                      }}
+                      onClick={togglePlay}
+                      className="w-full h-full object-cover cursor-pointer"
+                    />
+                  )}
 
                   {/* Ambient Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none z-10" />
@@ -414,11 +410,11 @@ export default function Hero({
                     </div>
                   </div>
 
-                  {/* Center Play Button (only shown when video is paused, so hovering never blocks playback) */}
-                  {!isPlaying && (
+                  {/* Center Play Button (only shown when video is paused or not yet mounted on mobile) */}
+                  {(!isPlaying || !videoMounted) && (
                     <button
                       type="button"
-                      onClick={togglePlay}
+                      onClick={handlePlayClick}
                       className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-black/70 hover:bg-studio-orange backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all transform hover:scale-110 shadow-2xl cursor-pointer z-20"
                       aria-label="Play introduction video"
                     >
@@ -428,7 +424,7 @@ export default function Hero({
 
                   {/* Bottom Controls Bar */}
                   <div className={`absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/95 to-transparent transition-opacity duration-300 z-20 ${
-                    showControls || !isPlaying ? 'opacity-100' : 'opacity-0'
+                    videoMounted && (showControls || !isPlaying) ? 'opacity-100' : 'opacity-0 pointer-events-none'
                   }`}>
                     {/* Scrubber Bar */}
                     <div

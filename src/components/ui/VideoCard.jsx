@@ -4,26 +4,11 @@ import { motion } from 'framer-motion';
 import Badge from './Badge';
 import { getOptimizedThumbnail, THUMBNAIL_DIMENSIONS } from '../../utils/imageOptimization';
 
-// Singleton coordinator to optimize performance:
-// Ensures only the most visible video autoplays at any time.
-let activeVideoId = null;
-const videoCardListeners = new Set();
-
-function setActivePlayingVideo(id) {
-  if (activeVideoId === id) return;
-  activeVideoId = id;
-  videoCardListeners.forEach(fn => fn(id));
-}
-
-function subscribeToActiveVideo(fn) {
-  videoCardListeners.add(fn);
-  return () => videoCardListeners.delete(fn);
-}
-
 export default function VideoCard({ project, onSelect }) {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -31,83 +16,30 @@ export default function VideoCard({ project, onSelect }) {
   const isFourThree = project.aspectRatio === "4:3";
   const optimizedThumbnail = getOptimizedThumbnail(project.thumbnail, project.id, project.title);
 
-  // IntersectionObserver for automatic autoplay & pause when visible in viewport (Desktop only, never mobile)
+  // Desktop Hover Video Preview: only play when hovered on desktop with pointer
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el || !project.videoUrl) return;
+    if (!isHovered || !videoRef.current) return;
+    const video = videoRef.current;
+    video.muted = true;
+    video.playsInline = true;
+    video.loop = true;
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    }
+  }, [isHovered]);
 
-    // Guard: Never auto-stream video files on mobile devices (saves multiple MBs of cellular data and network bandwidth)
-    const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || window.matchMedia('(pointer: coarse)').matches);
-    if (isMobile) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.15) {
-            // Became prominently visible: trigger single-video playback
-            setActivePlayingVideo(project.id);
-          } else if (!entry.isIntersecting) {
-            // Left visible screen: pause if currently playing
-            if (activeVideoId === project.id) {
-              setActivePlayingVideo(null);
-            }
-          }
-        });
-      },
-      {
-        threshold: [0, 0.15, 0.5, 0.8],
-        rootMargin: '50px 0px 50px 0px'
-      }
-    );
-
-    observer.observe(el);
-
-    // Subscribe to active video coordinator to pause when another video takes focus
-    const unsubscribe = subscribeToActiveVideo((currentActiveId) => {
-      const video = videoRef.current;
-      if (!video) return;
-
-      if (currentActiveId === project.id) {
-        video.muted = true;
-        video.playsInline = true;
-        video.loop = true;
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => setIsPlaying(true))
-            .catch(() => setIsPlaying(false));
-        }
-      } else {
-        video.pause();
-        setIsPlaying(false);
-      }
-    });
-
-    return () => {
-      observer.disconnect();
-      unsubscribe();
-      if (activeVideoId === project.id) {
-        activeVideoId = null;
-      }
-    };
-  }, [project.id, project.videoUrl]);
-
-  // Hover prioritization: hovering immediately prioritizes this video
+  // Hover prioritization: hovering immediately mounts & plays this video on desktop
   const handleMouseEnter = () => {
-    if (project.videoUrl) {
-      setActivePlayingVideo(project.id);
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768 && !window.matchMedia('(pointer: coarse)').matches;
+    if (isDesktop && project.videoUrl) {
+      setIsHovered(true);
     }
   };
 
   const handleMouseLeave = () => {
-    // If no longer visible at 50%, pause
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const inView = rect.top >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight);
-      if (!inView && activeVideoId === project.id) {
-        setActivePlayingVideo(null);
-      }
-    }
+    setIsHovered(false);
+    setIsPlaying(false);
   };
 
   // Badge styling by category
@@ -200,8 +132,8 @@ export default function VideoCard({ project, onSelect }) {
           </div>
         )}
 
-        {/* Autoplaying Animated Video Preview (Muted, Loop, IntersectionObserver Managed) */}
-        {project.videoUrl && (
+        {/* Autoplaying Animated Video Preview: ONLY mounted on desktop mouse hover (saves 2.8+ MB on initial page load) */}
+        {project.videoUrl && isHovered && (
           <div className={`absolute inset-0 w-full h-full flex items-center justify-center z-[3] pointer-events-none ${
             isVertical ? 'py-2' : ''
           }`}>
@@ -211,15 +143,11 @@ export default function VideoCard({ project, onSelect }) {
               poster={!imageError ? optimizedThumbnail : undefined}
               width={THUMBNAIL_DIMENSIONS.width}
               height={THUMBNAIL_DIMENSIONS.height}
+              autoPlay
               muted
               loop
               playsInline
-              preload="none"
-              onLoadedMetadata={() => {
-                if (activeVideoId === project.id && videoRef.current) {
-                  videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-                }
-              }}
+              preload="metadata"
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
               className={`transition-opacity duration-500 ${
