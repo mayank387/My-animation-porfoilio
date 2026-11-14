@@ -305,7 +305,6 @@ export default function Hero({
               onClick={!videoMounted ? handlePlayClick : undefined}
               className="relative w-full aspect-video rounded-3xl overflow-hidden bg-black border border-white/15 hover:border-orange-500/40 transition-all duration-500 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] hover:shadow-[0_0_50px_rgba(255,107,0,0.18)] group flex items-center justify-center cursor-pointer"
             >
-              
               {/* Poster Thumbnail (High priority LCP optimization - WebP with fallback) */}
               {!posterError && (
                 <picture className={`absolute inset-0 w-full h-full pointer-events-none z-10 transition-opacity duration-700 ${
