@@ -116,11 +116,11 @@ export default function VideoCard({ project, onSelect }) {
                   setImageError(true);
                 }
               }}
-              className={`transition-all duration-700 ease-out group-hover:scale-105 ${
+              className={`transition-transform duration-500 ease-out group-hover:scale-105 ${
                 isVertical 
                   ? 'h-full aspect-[9/16] object-cover rounded-xl shadow-[0_0_40px_rgba(99,102,241,0.25),0_15px_30px_rgba(0,0,0,0.8)] border border-white/15' 
                   : 'w-full h-full object-cover'
-              } ${imageLoaded ? 'opacity-100' : 'opacity-0'} ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
+              } ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
             />
           </div>
         ) : (

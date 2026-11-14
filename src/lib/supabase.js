@@ -1108,8 +1108,8 @@ export async function getIntroVideo() {
       if (!error && record && record.video_url) {
         const resolvedVideoUrl = await resolvePlayableUrl(record.video_url);
         const resolvedThumbnail = await resolvePlayableUrl(record.thumbnail_url);
-        const optimizedThumbnail = getOptimizedThumbnail(resolvedThumbnail || record.thumbnail_url, record.id || 'creator-intro-showreel', record.title);
-        const activeThumbnail = optimizedThumbnail || resolvedThumbnail || '';
+        const optimizedThumbnail = getOptimizedThumbnail(resolvedThumbnail || record.thumbnail_url, 'creator-intro-showreel', record.title) || '/thumbnails/intro_showreel_poster.webp';
+        const activeThumbnail = optimizedThumbnail || '/thumbnails/intro_showreel_poster.webp';
         return {
           id: record.id,
           title: record.title || 'A GLIMPSE INTO MY CREATIVE WORLD.',

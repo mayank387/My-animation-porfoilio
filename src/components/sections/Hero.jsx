@@ -49,7 +49,7 @@ export default function Hero({
 
   const hasVideo = Boolean(introVideo?.videoUrl);
   const rawPoster = introVideo?.thumbnailUrl || introVideo?.thumbnail || '';
-  const introPoster = getOptimizedThumbnail(rawPoster, introVideo?.id || 'creator-intro-showreel', introVideo?.title || 'My Introduction video');
+  const introPoster = getOptimizedThumbnail(rawPoster, 'creator-intro-showreel', introVideo?.title || 'My Introduction video') || '/thumbnails/intro_showreel_poster.webp';
 
   // Autoplay on desktop when mounted
   useEffect(() => {
@@ -307,26 +307,19 @@ export default function Hero({
             >
               {/* Poster Thumbnail (High priority LCP optimization - WebP with fallback) */}
               {!posterError && (
-                <picture className={`absolute inset-0 w-full h-full pointer-events-none z-10 transition-opacity duration-700 ${
+                <picture className={`absolute inset-0 w-full h-full pointer-events-none z-10 ${
                   isPlaying && videoMounted ? 'opacity-0' : 'opacity-100'
                 }`}>
                   <source srcSet="/thumbnails/intro_showreel_poster.webp" type="image/webp" />
                   <img
-                    src={introPoster || "/thumbnails/intro_showreel_poster.webp"}
+                    src="/thumbnails/intro_showreel_poster.webp"
                     alt="Director Showreel Intro Poster"
                     width={THUMBNAIL_DIMENSIONS.width}
                     height={THUMBNAIL_DIMENSIONS.height}
                     fetchPriority="high"
                     loading="eager"
                     decoding="async"
-                    onError={(e) => {
-                      const fallbackUrl = introVideo?.originalThumbnail;
-                      if (fallbackUrl && e.currentTarget.src !== fallbackUrl) {
-                        e.currentTarget.src = fallbackUrl;
-                      } else {
-                        setPosterError(true);
-                      }
-                    }}
+                    onError={() => setPosterError(true)}
                     className="w-full h-full object-cover"
                   />
                 </picture>

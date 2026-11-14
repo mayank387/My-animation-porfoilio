@@ -13,7 +13,7 @@ export const OPTIMIZED_PROJECT_IMAGES = [
   {
     webpPath: '/thumbnails/intro_showreel_poster.webp',
     ids: ['creator-intro-showreel', 'intro-showreel'],
-    titleKeywords: ['intro', 'showreel', 'introduction', 'creative world'],
+    titleKeywords: ['intro', 'showreel', 'introduction', 'creative world', 'glimpse'],
     signatures: ['1793961085457', 'px2e4o', 'showreel_frame', 'captured_showreel']
   },
   {
