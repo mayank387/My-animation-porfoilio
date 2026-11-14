@@ -21,11 +21,85 @@ const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 import { getProjects, getIntroVideo, getAdminSession, onAuthStateChange } from './lib/supabase';
 import { initAnalytics, trackPageView } from './lib/analytics';
 
+// Static default intro showreel metadata for instant 0ms above-the-fold paint
+const DEFAULT_INTRO_SHOWREEL = {
+  id: 'creator-intro-showreel',
+  title: 'My introduction video',
+  description: 'Explore my creativity through cinematic visuals, 3D animations and product advertisements.',
+  aspectRatio: '16:9',
+  duration: '0:30',
+  thumbnail: '/thumbnails/intro_showreel_poster.webp',
+  thumbnailUrl: '/thumbnails/intro_showreel_poster.webp',
+  originalThumbnail: '/thumbnails/intro_showreel_poster.webp'
+};
+
 export default function App() {
-  const [projectsList, setProjectsList] = useState([]);
-  const [introVideo, setIntroVideo] = useState(null);
+  // Initialize with cached projects or empty array for instant paint
+  const [projectsList, setProjectsList] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('mayank_public_projects');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return [];
+  });
+
+  // Initialize with cached intro showreel or static default for instant 0ms LCP
+  const [introVideo, setIntroVideo] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('mayank_intro_showreel');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && typeof parsed === 'object') return parsed;
+        }
+      } catch {}
+    }
+    return DEFAULT_INTRO_SHOWREEL;
+  });
+
   const [selectedProject, setSelectedProject] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadBelowFold, setLoadBelowFold] = useState(false);
+
+  // Defer heavy below-the-fold bundles to eliminate TBT (Total Blocking Time) on mobile
+  useEffect(() => {
+    let triggered = false;
+    const trigger = () => {
+      if (triggered) return;
+      triggered = true;
+      setLoadBelowFold(true);
+      window.removeEventListener('scroll', trigger);
+      window.removeEventListener('touchstart', trigger);
+      window.removeEventListener('mousemove', trigger);
+    };
+
+    window.addEventListener('scroll', trigger, { passive: true, once: true });
+    window.addEventListener('touchstart', trigger, { passive: true, once: true });
+    window.addEventListener('mousemove', trigger, { passive: true, once: true });
+
+    if ('requestIdleCallback' in window) {
+      const handle = window.requestIdleCallback(trigger, { timeout: 1800 });
+      return () => {
+        window.cancelIdleCallback(handle);
+        window.removeEventListener('scroll', trigger);
+        window.removeEventListener('touchstart', trigger);
+        window.removeEventListener('mousemove', trigger);
+      };
+    } else {
+      const timer = setTimeout(trigger, 1200);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('scroll', trigger);
+        window.removeEventListener('touchstart', trigger);
+        window.removeEventListener('mousemove', trigger);
+      };
+    }
+  }, []);
 
   // Helper to detect if current path or hash is admin
   const isPathAdmin = useCallback(() => {
@@ -46,10 +120,14 @@ export default function App() {
     try {
       // false = only fetch published projects (drafts are hidden from public)
       const projects = await getProjects(false);
-      setProjectsList(projects || []);
+      if (Array.isArray(projects) && projects.length > 0) {
+        setProjectsList(projects);
+        try {
+          localStorage.setItem('mayank_public_projects', JSON.stringify(projects));
+        } catch {}
+      }
     } catch (err) {
       console.warn('Could not load projects:', err);
-      setProjectsList([]);
     }
   }, []);
 
@@ -57,7 +135,12 @@ export default function App() {
   const loadIntroShowreel = useCallback(async () => {
     try {
       const data = await getIntroVideo();
-      setIntroVideo(data);
+      if (data) {
+        setIntroVideo(data);
+        try {
+          localStorage.setItem('mayank_intro_showreel', JSON.stringify(data));
+        } catch {}
+      }
     } catch (err) {
       console.warn('Could not load intro showreel:', err);
     }
@@ -243,18 +326,22 @@ export default function App() {
           onOpenFeaturedProject={handleOpenFeaturedReel} 
           featuredProject={projectsList.find(p => p.featured) || projectsList[0] || null}
         />
-        <Suspense fallback={<div className="min-h-[400px]" />}>
-          <Showcase 
-            projects={projectsList} 
-            onSelectProject={handleSelectProject} 
-            onOpenAdmin={navigateToAdmin}
-          />
-          <About />
-          <Services />
-          <Pipeline />
-          <TechStack />
-          <Contact />
-        </Suspense>
+        {loadBelowFold ? (
+          <Suspense fallback={<div className="min-h-[400px]" />}>
+            <Showcase 
+              projects={projectsList} 
+              onSelectProject={handleSelectProject} 
+              onOpenAdmin={navigateToAdmin}
+            />
+            <About />
+            <Services />
+            <Pipeline />
+            <TechStack />
+            <Contact />
+          </Suspense>
+        ) : (
+          <div className="min-h-[400px]" />
+        )}
       </main>
 
       {/* Floating Quick Upload / Studio CMS Button */}
@@ -271,9 +358,11 @@ export default function App() {
       </button>
 
       {/* Footer (Lazy Loaded) */}
-      <Suspense fallback={null}>
-        <Footer onOpenAdmin={navigateToAdmin} />
-      </Suspense>
+      {loadBelowFold && (
+        <Suspense fallback={null}>
+          <Footer onOpenAdmin={navigateToAdmin} />
+        </Suspense>
+      )}
 
       {/* Theater Video Modal with Playlist Navigation & Full Controls (Lazy loaded on demand) */}
       {isModalOpen && (

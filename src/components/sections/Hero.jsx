@@ -306,257 +306,179 @@ export default function Hero({
               className="relative w-full aspect-video rounded-3xl overflow-hidden bg-black border border-white/15 hover:border-orange-500/40 transition-all duration-500 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] hover:shadow-[0_0_50px_rgba(255,107,0,0.18)] group flex items-center justify-center cursor-pointer"
             >
               
-              {hasVideo ? (
-                /* Real Uploaded Intro Video Display */
-                <>
-                  {/* Poster Thumbnail (High priority LCP optimization - WebP with fallback) */}
-                  {!posterError && (
-                    <picture className={`absolute inset-0 w-full h-full pointer-events-none z-10 transition-opacity duration-700 ${
-                      isPlaying && videoMounted ? 'opacity-0' : 'opacity-100'
-                    }`}>
-                      <source srcSet="/thumbnails/intro_showreel_poster.webp" type="image/webp" />
-                      <img
-                        src={introPoster || "/thumbnails/intro_showreel_poster.webp"}
-                        alt="Director Showreel Intro Poster"
-                        width={THUMBNAIL_DIMENSIONS.width}
-                        height={THUMBNAIL_DIMENSIONS.height}
-                        fetchPriority="high"
-                        loading="eager"
-                        decoding="async"
-                        onError={(e) => {
-                          const fallbackUrl = introVideo?.originalThumbnail;
-                          if (fallbackUrl && e.currentTarget.src !== fallbackUrl) {
-                            e.currentTarget.src = fallbackUrl;
-                          } else {
-                            setPosterError(true);
-                          }
-                        }}
-                        className="w-full h-full object-cover"
-                      />
-                    </picture>
-                  )}
+              {/* Poster Thumbnail (High priority LCP optimization - WebP with fallback) */}
+              {!posterError && (
+                <picture className={`absolute inset-0 w-full h-full pointer-events-none z-10 transition-opacity duration-700 ${
+                  isPlaying && videoMounted ? 'opacity-0' : 'opacity-100'
+                }`}>
+                  <source srcSet="/thumbnails/intro_showreel_poster.webp" type="image/webp" />
+                  <img
+                    src={introPoster || "/thumbnails/intro_showreel_poster.webp"}
+                    alt="Director Showreel Intro Poster"
+                    width={THUMBNAIL_DIMENSIONS.width}
+                    height={THUMBNAIL_DIMENSIONS.height}
+                    fetchPriority="high"
+                    loading="eager"
+                    decoding="async"
+                    onError={(e) => {
+                      const fallbackUrl = introVideo?.originalThumbnail;
+                      if (fallbackUrl && e.currentTarget.src !== fallbackUrl) {
+                        e.currentTarget.src = fallbackUrl;
+                      } else {
+                        setPosterError(true);
+                      }
+                    }}
+                    className="w-full h-full object-cover"
+                  />
+                </picture>
+              )}
 
-                  {/* HTML5 Video Player - Mounted on desktop immediately; mounted on mobile only on user tap to protect LCP */}
-                  {videoMounted && (
-                    <video
-                      ref={videoRef}
-                      src={introVideo.videoUrl}
-                      poster={introPoster || "/thumbnails/intro_showreel_poster.webp"}
-                      width={THUMBNAIL_DIMENSIONS.width}
-                      height={THUMBNAIL_DIMENSIONS.height}
-                      autoPlay
-                      muted={isMuted}
-                      playsInline
-                      loop
-                      preload="auto"
-                      onPlay={() => setIsPlaying(true)}
-                      onPause={() => setIsPlaying(false)}
-                      onError={(e) => console.warn('Hero video playback notice:', e)}
-                      onTimeUpdate={handleTimeUpdate}
-                      onEnded={() => {
-                        // Infinite loop safeguard
-                        if (videoRef.current) {
-                          videoRef.current.currentTime = 0;
-                          videoRef.current.play().catch(() => {});
-                        }
-                      }}
-                      onLoadedMetadata={() => {
-                        if (videoRef.current) {
-                          videoRef.current.muted = true;
-                          videoRef.current.loop = true;
-                          videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-                        }
-                      }}
-                      onClick={togglePlay}
-                      className="w-full h-full object-cover cursor-pointer"
-                    />
-                  )}
+              {/* HTML5 Video Player - Mounted on desktop immediately; mounted on mobile only on user tap to protect LCP */}
+              {hasVideo && videoMounted && (
+                <video
+                  ref={videoRef}
+                  src={introVideo.videoUrl}
+                  poster={introPoster || "/thumbnails/intro_showreel_poster.webp"}
+                  width={THUMBNAIL_DIMENSIONS.width}
+                  height={THUMBNAIL_DIMENSIONS.height}
+                  autoPlay
+                  muted={isMuted}
+                  playsInline
+                  loop
+                  preload="auto"
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onError={(e) => console.warn('Hero video playback notice:', e)}
+                  onTimeUpdate={handleTimeUpdate}
+                  onEnded={() => {
+                    // Infinite loop safeguard
+                    if (videoRef.current) {
+                      videoRef.current.currentTime = 0;
+                      videoRef.current.play().catch(() => {});
+                    }
+                  }}
+                  onLoadedMetadata={() => {
+                    if (videoRef.current) {
+                      videoRef.current.muted = true;
+                      videoRef.current.loop = true;
+                      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+                    }
+                  }}
+                  onClick={togglePlay}
+                  className="w-full h-full object-cover cursor-pointer"
+                />
+              )}
 
-                  {/* Ambient Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none z-10" />
+              {/* Ambient Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 pointer-events-none z-10" />
 
-                  {/* Top Bar: Title, Manage Showreel & Sound Toggle */}
-                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20 pointer-events-none">
-                    <span className="px-3 py-1.5 rounded-full text-xs font-mono font-medium tracking-wide bg-black/80 backdrop-blur-md text-white border border-white/15 flex items-center gap-2">
-                      <Tv className="w-3.5 h-3.5 text-electric-blue" />
-                      <span className="max-w-[140px] sm:max-w-[200px] truncate">{introVideo.title || 'Creator Showreel'}</span>
-                    </span>
+              {/* Top Bar: Title, Manage Showreel & Sound Toggle */}
+              <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20 pointer-events-none">
+                <span className="px-3 py-1.5 rounded-full text-xs font-mono font-medium tracking-wide bg-black/80 backdrop-blur-md text-white border border-white/15 flex items-center gap-2">
+                  <Tv className="w-3.5 h-3.5 text-electric-blue" />
+                  <span className="max-w-[140px] sm:max-w-[200px] truncate">{introVideo?.title || 'Creator Showreel'}</span>
+                </span>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={onOpenAdminUpload}
-                        className="pointer-events-auto px-3 py-1.5 rounded-full text-xs font-mono font-medium tracking-wide bg-black/80 hover:bg-electric-indigo text-white border border-white/15 backdrop-blur-md transition-colors flex items-center gap-1.5 cursor-pointer shadow-lg"
-                        title="Upload or Change Intro Showreel"
-                        aria-label="Manage Intro Showreel"
-                      >
-                        <UploadCloud className="w-3.5 h-3.5 text-electric-blue" />
-                        <span className="hidden sm:inline">Manage Showreel</span>
-                      </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={onOpenAdminUpload}
+                    className="pointer-events-auto px-3 py-1.5 rounded-full text-xs font-mono font-medium tracking-wide bg-black/80 hover:bg-electric-indigo text-white border border-white/15 backdrop-blur-md transition-colors flex items-center gap-1.5 cursor-pointer shadow-lg"
+                    title="Upload or Change Intro Showreel"
+                    aria-label="Manage Intro Showreel"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5 text-electric-blue" />
+                    <span className="hidden sm:inline">Manage Showreel</span>
+                  </button>
 
-                      <button
-                        type="button"
-                        onClick={toggleMute}
-                        className="pointer-events-auto p-2 rounded-full bg-black/80 hover:bg-black text-white border border-white/15 backdrop-blur-md transition-colors cursor-pointer"
-                        title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-                        aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
-                      >
-                        {isMuted ? (
-                          <VolumeX className="w-4 h-4 text-slate-400" />
-                        ) : (
-                          <Volume2 className="w-4 h-4 text-emerald-400" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleMute}
+                    className="pointer-events-auto p-2 rounded-full bg-black/80 hover:bg-black text-white border border-white/15 backdrop-blur-md transition-colors cursor-pointer"
+                    title={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+                    aria-label={isMuted ? 'Unmute Sound' : 'Mute Sound'}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <Volume2 className="w-4 h-4 text-emerald-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
 
-                  {/* Center Play Button (only shown when video is paused or not yet mounted on mobile) */}
-                  {(!isPlaying || !videoMounted) && (
+              {/* Center Play Button (only shown when video is paused or not yet mounted on mobile) */}
+              {(!isPlaying || !videoMounted) && (
+                <button
+                  type="button"
+                  onClick={handlePlayClick}
+                  className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-black/70 hover:bg-studio-orange backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all transform hover:scale-110 shadow-2xl cursor-pointer z-20"
+                  aria-label="Play introduction video"
+                >
+                  <Play className="w-7 h-7 fill-white ml-0.5" />
+                </button>
+              )}
+
+              {/* Bottom Controls Bar */}
+              <div className={`absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/95 to-transparent transition-opacity duration-300 z-20 ${
+                videoMounted && (showControls || !isPlaying) ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}>
+                {/* Scrubber Bar */}
+                <div
+                  role="slider"
+                  tabIndex={0}
+                  aria-label="Video timeline scrubber"
+                  aria-valuenow={Math.round(progress)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  onClick={handleSeek}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowRight' && videoRef.current) {
+                      videoRef.current.currentTime = Math.min((videoRef.current.duration || 0), videoRef.current.currentTime + 5);
+                    } else if (e.key === 'ArrowLeft' && videoRef.current) {
+                      videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 5);
+                    }
+                  }}
+                  className="w-full h-1.5 bg-white/20 hover:h-2.5 rounded-full cursor-pointer mb-2.5 relative overflow-hidden transition-all focus:outline-none focus:ring-1 focus:ring-studio-orange"
+                >
+                  <div
+                    className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-xs font-mono text-slate-300">
+                  <div className="flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={handlePlayClick}
-                      className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-black/70 hover:bg-studio-orange backdrop-blur-md border border-white/20 flex items-center justify-center text-white transition-all transform hover:scale-110 shadow-2xl cursor-pointer z-20"
-                      aria-label="Play introduction video"
+                      onClick={togglePlay}
+                      aria-label={isPlaying ? 'Pause video' : 'Play video'}
+                      className="hover:text-white transition-colors cursor-pointer font-medium"
                     >
-                      <Play className="w-7 h-7 fill-white ml-0.5" />
+                      {isPlaying ? 'Pause' : 'Play'}
                     </button>
-                  )}
-
-                  {/* Bottom Controls Bar */}
-                  <div className={`absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/95 to-transparent transition-opacity duration-300 z-20 ${
-                    videoMounted && (showControls || !isPlaying) ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                  }`}>
-                    {/* Scrubber Bar */}
-                    <div
-                      role="slider"
-                      tabIndex={0}
-                      aria-label="Video timeline scrubber"
-                      aria-valuenow={Math.round(progress)}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      onClick={handleSeek}
-                      onKeyDown={(e) => {
-                        if (e.key === 'ArrowRight' && videoRef.current) {
-                          videoRef.current.currentTime = Math.min((videoRef.current.duration || 0), videoRef.current.currentTime + 5);
-                        } else if (e.key === 'ArrowLeft' && videoRef.current) {
-                          videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 5);
-                        }
-                      }}
-                      className="w-full h-1.5 bg-white/20 hover:h-2.5 rounded-full cursor-pointer mb-2.5 relative overflow-hidden transition-all focus:outline-none focus:ring-1 focus:ring-studio-orange"
+                    <span>•</span>
+                    <button
+                      type="button"
+                      onClick={toggleMute}
+                      aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
+                      className="hover:text-white transition-colors cursor-pointer font-medium"
                     >
-                      <div
-                        className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"
-                        style={{ width: `${progress}%` }}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between text-xs font-mono text-slate-300">
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={togglePlay}
-                          aria-label={isPlaying ? 'Pause video' : 'Play video'}
-                          className="hover:text-white transition-colors cursor-pointer font-medium"
-                        >
-                          {isPlaying ? 'Pause' : 'Play'}
-                        </button>
-                        <span>•</span>
-                        <button
-                          type="button"
-                          onClick={toggleMute}
-                          aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
-                          className="hover:text-white transition-colors cursor-pointer font-medium"
-                        >
-                          {isMuted ? 'Unmute Audio' : 'Sound On'}
-                        </button>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={toggleFullscreen}
-                        className="hover:text-white transition-colors p-1 cursor-pointer"
-                        title="Fullscreen"
-                        aria-label="Toggle Fullscreen"
-                      >
-                        <Maximize2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                /* Expansive 16:9 Empty State Placeholder with Instant Poster Paint */
-                <div className="absolute inset-0 p-8 sm:p-10 flex flex-col justify-between bg-gradient-to-br from-studio-card via-studio-surface to-black text-center overflow-hidden">
-                  {/* Instant LCP Poster Background */}
-                  <picture className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                    <source srcSet="/thumbnails/intro_showreel_poster.webp" type="image/webp" />
-                    <img
-                      src="/thumbnails/intro_showreel_poster.webp"
-                      alt="Director Showreel Intro Poster"
-                      width={THUMBNAIL_DIMENSIONS.width}
-                      height={THUMBNAIL_DIMENSIONS.height}
-                      fetchPriority="high"
-                      loading="eager"
-                      decoding="async"
-                      className="w-full h-full object-cover opacity-35"
-                    />
-                  </picture>
-
-                  {/* Subtle Background Glow & Grid */}
-                  <div className="absolute inset-0 subtle-grid opacity-20 pointer-events-none z-1" />
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-electric-indigo/15 blur-[80px] rounded-full pointer-events-none z-1" />
-
-                  {/* Top Badge */}
-                  <div className="relative z-10 flex items-center justify-between">
-                    <span className="px-3.5 py-1.5 rounded-full text-xs font-mono font-medium tracking-wider uppercase bg-white/[0.04] border border-white/10 text-cyan-300 flex items-center gap-2">
-                      <Film className="w-3.5 h-3.5 text-electric-blue" />
-                      <span>Introduction Reel</span>
-                    </span>
-                    <span className="text-xs font-mono text-slate-400">16:9 Cinema Widescreen</span>
+                      {isMuted ? 'Unmute Audio' : 'Sound On'}
+                    </button>
                   </div>
 
-                  {/* Center Graphic & Pitch */}
-                  <div className="relative z-10 space-y-3.5 my-auto">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-3xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-electric-blue shadow-2xl">
-                      <Play className="w-8 h-8 sm:w-10 sm:h-10 text-electric-blue/80 ml-1" />
-                    </div>
-
-                    <h3 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-white tracking-tight">
-                      My Creative World
-                    </h3>
-
-                    <p className="text-xs sm:text-sm text-studio-muted font-normal max-w-md mx-auto leading-relaxed">
-                      Cinematic 3D animation showreel, product commercial montage & visual physics showcase.
-                    </p>
-                  </div>
-
-                  {/* Bottom Admin Link / Status */}
-                  <div className="relative z-10 flex items-center justify-between pt-3 border-t border-white/5 text-xs font-mono text-slate-400">
-                    <span className="flex items-center gap-1.5 text-slate-400">
-                      <span className="w-2 h-2 rounded-full bg-electric-blue/70 animate-pulse" />
-                      <span>Showreel Coming Soon</span>
-                    </span>
-
-                    {typeof onOpenAdminUpload === 'function' ? (
-                      <button
-                        type="button"
-                        onClick={onOpenAdminUpload}
-                        className="text-electric-blue hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer font-medium"
-                      >
-                        <UploadCloud className="w-3.5 h-3.5" />
-                        <span>Upload in Admin</span>
-                      </button>
-                    ) : (
-                      <a
-                        href="/admin"
-                        className="text-electric-blue hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer font-medium"
-                      >
-                        <UploadCloud className="w-3.5 h-3.5" />
-                        <span>Upload in Admin</span>
-                      </a>
-                    )}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={toggleFullscreen}
+                    className="hover:text-white transition-colors p-1 cursor-pointer"
+                    title="Fullscreen"
+                    aria-label="Toggle Fullscreen"
+                  >
+                    <Maximize2 className="w-4 h-4" />
+                  </button>
                 </div>
-              )}
+              </div>
 
             </div>
 
