@@ -18,7 +18,7 @@ const VideoModal = lazy(() => import('./components/ui/VideoModal'));
 const AdminLogin = lazy(() => import('./components/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 
-import { getProjects, getIntroVideo, getAdminSession, onAuthStateChange } from './lib/supabase';
+// Supabase SDK is dynamically imported inside data hooks to keep initial mobile bundle ultra-light
 import { initAnalytics, trackPageView } from './lib/analytics';
 
 export default function App() {
@@ -44,6 +44,7 @@ export default function App() {
   // Fetch published projects for public portfolio view
   const loadPublicProjects = useCallback(async () => {
     try {
+      const { getProjects } = await import('./lib/supabase');
       // false = only fetch published projects (drafts are hidden from public)
       const projects = await getProjects(false);
       setProjectsList(projects || []);
@@ -56,6 +57,7 @@ export default function App() {
   // Fetch creator intro showreel
   const loadIntroShowreel = useCallback(async () => {
     try {
+      const { getIntroVideo } = await import('./lib/supabase');
       const data = await getIntroVideo();
       setIntroVideo(data);
     } catch (err) {
@@ -66,6 +68,7 @@ export default function App() {
   // Check admin session
   const checkAdminAuth = useCallback(async () => {
     try {
+      const { getAdminSession } = await import('./lib/supabase');
       const sessionUser = await getAdminSession();
       if (sessionUser) {
         setAdminUser(sessionUser);
@@ -86,16 +89,20 @@ export default function App() {
     if (!isAdminView) return;
     checkAdminAuth();
 
-    const { data: authListener } = onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setAdminUser(session.user);
-      } else if (event === 'SIGNED_OUT') {
-        setAdminUser(null);
-      }
-    });
+    let authSubscription = null;
+    import('./lib/supabase').then(({ onAuthStateChange }) => {
+      const { data } = onAuthStateChange((event, session) => {
+        if (session?.user) {
+          setAdminUser(session.user);
+        } else if (event === 'SIGNED_OUT') {
+          setAdminUser(null);
+        }
+      });
+      authSubscription = data?.subscription;
+    }).catch((err) => console.warn('Auth listener error:', err));
 
     return () => {
-      authListener?.subscription?.unsubscribe();
+      authSubscription?.unsubscribe();
     };
   }, [isAdminView, checkAdminAuth]);
 
