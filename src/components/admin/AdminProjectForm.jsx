@@ -4,7 +4,7 @@ import {
   X, Upload, Film, Image as ImageIcon, Play, CheckCircle2, 
   AlertCircle, Eye, Sparkles, Layers, Sliders, ArrowUpRight,
   FileCheck, ShieldAlert, Clock, RefreshCw, FileText, UploadCloud,
-  Camera, Check
+  Camera, Check, Trash2, ImageOff
 } from 'lucide-react';
 import { projectCategories } from '../../data/projects';
 import { uploadMedia, validateUploadFile, isSupabaseConfigured } from '../../lib/supabase';
@@ -15,7 +15,9 @@ export default function AdminProjectForm({
   project, 
   isOpen, 
   onClose, 
-  onSave 
+  onSave,
+  nextOrder,
+  totalProjects
 }) {
   const isEditing = Boolean(project?.id);
   const isConfigured = isSupabaseConfigured();
@@ -40,6 +42,7 @@ export default function AdminProjectForm({
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [videoFileError, setVideoFileError] = useState('');
   const [thumbFileError, setThumbFileError] = useState('');
+  const [isThumbnailRemoved, setIsThumbnailRemoved] = useState(false);
   
   // Progress & Status
   const [uploadStage, setUploadStage] = useState('');
@@ -71,6 +74,15 @@ export default function AdminProjectForm({
     objectUrlsRef.current = [];
   };
 
+  // Remove thumbnail handler
+  const handleRemoveThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailUrl('');
+    setPreviewThumbSrc('');
+    setThumbFileError('');
+    setIsThumbnailRemoved(true);
+  };
+
   // Pre-fill form when editing or resetting
   useEffect(() => {
     cleanupObjectUrls();
@@ -89,13 +101,15 @@ export default function AdminProjectForm({
       setThumbnailUrl(project.thumbnail || '');
       setPreviewVideoSrc(project.videoUrl || '');
       setPreviewThumbSrc(project.thumbnail || '');
+      setIsThumbnailRemoved(!project.thumbnail && !project.thumbnailUrl);
     } else {
       // Defaults for brand new project
       setTitle('');
       setDescription('');
       setCategory('3d-animation');
       setAspectRatio('16:9');
-      setDisplayOrder(1);
+      const defaultOrder = nextOrder || (totalProjects ? totalProjects + 1 : 1);
+      setDisplayOrder(defaultOrder);
       setDuration('0:20');
       setSpecType('Original Work');
       setToolsStr('Blender, Cinema 4D, After Effects, DaVinci Resolve');
@@ -104,6 +118,7 @@ export default function AdminProjectForm({
       setThumbnailUrl('');
       setPreviewVideoSrc('');
       setPreviewThumbSrc('');
+      setIsThumbnailRemoved(false);
     }
 
     setVideoFile(null);
@@ -119,7 +134,7 @@ export default function AdminProjectForm({
     return () => {
       cleanupObjectUrls();
     };
-  }, [project, isOpen]);
+  }, [project, isOpen, nextOrder, totalProjects]);
 
   // Extract multiple auto-thumbnail candidates from video file (10%, 35%, 60%, 85%)
   const generateAutoThumbnails = (file) => {
@@ -174,8 +189,8 @@ export default function AdminProjectForm({
         setAutoThumbnails(extracted);
         setIsExtractingFrames(false);
 
-        // If user has not chosen a custom thumbnail yet, default to the 1st extracted frame
-        if (extracted.length > 0 && !thumbnailFile && !thumbnailUrl) {
+        // If user has not chosen a custom thumbnail yet and hasn't explicitly removed it, default to 1st frame
+        if (extracted.length > 0 && !thumbnailFile && !thumbnailUrl && !isThumbnailRemoved) {
           setThumbnailFile(extracted[0].file);
           setPreviewThumbSrc(extracted[0].url);
           setThumbFileError('');
@@ -217,6 +232,7 @@ export default function AdminProjectForm({
 
         setThumbnailFile(autoFile);
         setPreviewThumbSrc(frameUrl);
+        setIsThumbnailRemoved(false);
         setThumbFileError('');
         setAutoThumbnails((prev) => [{ url: frameUrl, file: autoFile, label: `Capture (${label})` }, ...prev]);
       }, 'image/webp', 0.85);
@@ -254,11 +270,13 @@ export default function AdminProjectForm({
       const optimizedFile = await convertImageToWebP(file, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
       setThumbnailFile(optimizedFile);
       setThumbFileError('');
+      setIsThumbnailRemoved(false);
       const previewUrl = createSafeObjectUrl(optimizedFile);
       setPreviewThumbSrc(previewUrl);
     } catch (err) {
       setThumbnailFile(file);
       setThumbFileError('');
+      setIsThumbnailRemoved(false);
       const previewUrl = createSafeObjectUrl(file);
       setPreviewThumbSrc(previewUrl);
     }
@@ -288,9 +306,9 @@ export default function AdminProjectForm({
       return;
     }
 
-    // Auto-generate high-res WebP thumbnail from video if user has not picked a custom image
-    let thumbToProcess = thumbnailFile;
-    if (!thumbToProcess && !thumbnailUrl.trim() && videoFile) {
+    // Auto-generate high-res WebP thumbnail from video ONLY if user has NOT explicitly removed it
+    let thumbToProcess = isThumbnailRemoved ? null : thumbnailFile;
+    if (!isThumbnailRemoved && !thumbToProcess && !thumbnailUrl.trim() && videoFile) {
       setUploadStage('Auto-extracting high-resolution WebP thumbnail from video...');
       try {
         const autoThumb = await extractVideoThumbnailAsWebP(videoFile, 0.15);
@@ -303,18 +321,13 @@ export default function AdminProjectForm({
       }
     }
 
-    if (!thumbToProcess && !thumbnailUrl.trim()) {
-      setErrorMsg('Please select a thumbnail image from your computer or enter a poster URL.');
-      return;
-    }
-
     setIsSubmitting(true);
     setUploadPercent(0);
     setUploadStage('Preparing project files...');
 
     try {
       let finalVideoUrl = videoUrl.trim();
-      let finalThumbnailUrl = thumbnailUrl.trim();
+      let finalThumbnailUrl = isThumbnailRemoved ? '' : thumbnailUrl.trim();
 
       // 1. Upload Video if local file selected and Supabase configured
       if (videoFile) {
@@ -335,8 +348,8 @@ export default function AdminProjectForm({
         }
       }
 
-      // 2. Upload Thumbnail with automatic WebP conversion and Supabase Storage delivery
-      if (thumbToProcess) {
+      // 2. Upload Thumbnail with automatic WebP conversion and Supabase Storage delivery (if not removed)
+      if (thumbToProcess && !isThumbnailRemoved) {
         setUploadStage('Optimizing thumbnail to WebP format...');
         const optimizedThumbFile = await convertImageToWebP(thumbToProcess, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
 
@@ -355,6 +368,8 @@ export default function AdminProjectForm({
             }
           );
         }
+      } else if (isThumbnailRemoved) {
+        finalThumbnailUrl = '';
       }
 
       setUploadStage('Saving project record...');
@@ -390,7 +405,7 @@ export default function AdminProjectForm({
         disclaimer: 'Portfolio showcase project.'
       };
 
-      await onSave(projectData, project?.id, { videoFile, thumbFile: thumbToProcess || thumbnailFile });
+      await onSave(projectData, project?.id, { videoFile, thumbFile: isThumbnailRemoved ? null : (thumbToProcess || thumbnailFile) });
       setUploadPercent(100);
       onClose();
     } catch (err) {
@@ -535,8 +550,8 @@ export default function AdminProjectForm({
 
                 <div>
                   <label className="text-xs font-mono text-slate-300 block mb-1.5 flex items-center justify-between">
-                    <span>Display Index <span className="text-electric-blue">*</span></span>
-                    <span className="text-[10px] text-slate-500">Order</span>
+                    <span>Gallery Rank <span className="text-electric-blue">*</span></span>
+                    <span className="text-[10px] text-cyan-400 font-semibold">Position #{displayOrder}</span>
                   </label>
                   <input
                     type="number"
@@ -544,20 +559,20 @@ export default function AdminProjectForm({
                     step="1"
                     value={displayOrder}
                     onChange={(e) => setDisplayOrder(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                    title="Lower number appears first in gallery (1 = Position #1)"
+                    title="Whatever rank position you assign (1, 2, 3...), the video is placed at that exact position of rank!"
                     className="w-full bg-studio-card border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-electric-indigo"
                   />
                 </div>
               </div>
 
               {/* Display Index Helper Note */}
-              <div className="px-3.5 py-2 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <div className="px-3.5 py-2.5 rounded-xl bg-electric-indigo/10 border border-electric-indigo/20 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] font-mono gap-1 text-slate-300">
                 <span className="flex items-center gap-1.5 text-slate-300">
-                  <Sliders className="w-3.5 h-3.5 text-electric-blue" />
-                  <span>Manual Gallery Positioning:</span>
+                  <Sliders className="w-3.5 h-3.5 text-electric-blue flex-shrink-0" />
+                  <span>Exact Gallery Ranking:</span>
                 </span>
-                <span className="text-electric-blue">
-                  Index #{displayOrder} ({displayOrder === 1 ? 'First card on homepage' : `Card position #${displayOrder}`})
+                <span className="text-cyan-300 font-semibold">
+                  Rank #{displayOrder} &rarr; {displayOrder === 1 ? 'Position #1 (First video on homepage)' : `Position #${displayOrder} in showcase gallery`}
                 </span>
               </div>
 
@@ -629,12 +644,12 @@ export default function AdminProjectForm({
               </div>
 
               {/* 5. Thumbnail Image Upload & URL */}
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2.5">
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-cyan-300 flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4" /> Thumbnail Image Poster (JPG / PNG / WebP)
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">Max 15 MB</span>
+                  <span className="text-[10px] font-mono text-slate-400">Optional</span>
                 </div>
 
                 {thumbFileError && (
@@ -644,14 +659,59 @@ export default function AdminProjectForm({
                   </div>
                 )}
 
+                {/* Active Thumbnail Badge with Remove Button */}
+                {(previewThumbSrc || thumbnailFile || thumbnailUrl) && !isThumbnailRemoved ? (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-16 aspect-video rounded-lg overflow-hidden bg-black border border-white/10 flex-shrink-0">
+                        <img src={previewThumbSrc} alt="Selected thumbnail" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-mono text-cyan-300 block truncate">
+                          {thumbnailFile ? thumbnailFile.name : (thumbnailUrl ? 'Custom Image URL' : 'Active Thumbnail Poster')}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 mt-0.5">
+                          ✓ Active Poster Loaded
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveThumbnail}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-300 hover:text-red-200 border border-red-500/30 text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer flex-shrink-0"
+                      title="Remove current thumbnail poster"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                      <span>Remove Thumbnail</span>
+                    </button>
+                  </div>
+                ) : isThumbnailRemoved ? (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ImageOff className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                      <span>Thumbnail removed. Video will display its native player frame.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsThumbnailRemoved(false);
+                        if (videoFile) generateAutoThumbnails(videoFile);
+                      }}
+                      className="text-[11px] font-mono text-cyan-400 hover:underline cursor-pointer"
+                    >
+                      Undo / Pick Thumbnail
+                    </button>
+                  </div>
+                ) : null}
+
                 <div className="flex flex-col sm:flex-row gap-3">
                   {/* File Pick Button */}
                   <label className="flex-1 cursor-pointer p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-dashed border-white/15 hover:border-cyan-400 text-center transition-all group">
                     <Upload className="w-4 h-4 mx-auto text-slate-400 group-hover:text-cyan-300 mb-1 transition-colors" />
                     <span className="text-[11px] font-mono text-slate-200 block truncate">
-                      {thumbnailFile ? thumbnailFile.name : 'Choose Poster Image from Computer'}
+                      {thumbnailFile && !isThumbnailRemoved ? thumbnailFile.name : 'Choose Poster Image from Computer'}
                     </span>
-                    {thumbnailFile && (
+                    {thumbnailFile && !isThumbnailRemoved && (
                       <span className="text-[10px] font-mono text-emerald-400 block mt-0.5">
                         ✓ {formatBytes(thumbnailFile.size)} ready
                       </span>
@@ -669,8 +729,9 @@ export default function AdminProjectForm({
                     <input
                       type="url"
                       placeholder="Or paste poster image URL"
-                      value={thumbnailUrl}
+                      value={isThumbnailRemoved ? '' : thumbnailUrl}
                       onChange={(e) => {
+                        setIsThumbnailRemoved(false);
                         setThumbnailUrl(e.target.value);
                         setPreviewThumbSrc(e.target.value);
                       }}
@@ -682,7 +743,10 @@ export default function AdminProjectForm({
                 {videoFile && (
                   <button
                     type="button"
-                    onClick={() => generateAutoThumbnails(videoFile)}
+                    onClick={() => {
+                      setIsThumbnailRemoved(false);
+                      generateAutoThumbnails(videoFile);
+                    }}
                     className="w-full py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-cyan-500/20 text-cyan-300 hover:text-cyan-200 text-xs font-mono flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
@@ -884,7 +948,7 @@ export default function AdminProjectForm({
 
                       <div className="grid grid-cols-4 gap-2">
                         {autoThumbnails.slice(0, 4).map((thumb, idx) => {
-                          const isSelected = previewThumbSrc === thumb.url;
+                          const isSelected = !isThumbnailRemoved && previewThumbSrc === thumb.url;
                           return (
                             <button
                               key={idx}
@@ -892,6 +956,7 @@ export default function AdminProjectForm({
                               onClick={() => {
                                 setThumbnailFile(thumb.file);
                                 setPreviewThumbSrc(thumb.url);
+                                setIsThumbnailRemoved(false);
                                 setThumbFileError('');
                               }}
                               className={`group relative aspect-video rounded-xl overflow-hidden border transition-all cursor-pointer ${
@@ -927,19 +992,37 @@ export default function AdminProjectForm({
                         </button>
                       )}
                     </div>
-                  ) : previewThumbSrc ? (
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-white/5">
-                      <div className="w-20 aspect-video rounded-lg overflow-hidden bg-black flex-shrink-0 border border-white/10">
-                        <img src={previewThumbSrc} alt="Active Poster" className="w-full h-full object-cover" />
+                  ) : previewThumbSrc && !isThumbnailRemoved ? (
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-black/40 border border-white/5">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-20 aspect-video rounded-lg overflow-hidden bg-black flex-shrink-0 border border-white/10">
+                          <img src={previewThumbSrc} alt="Active Poster" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1 font-medium">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Active Thumbnail Selected
+                          </span>
+                          <span className="text-[11px] text-slate-300 font-sans truncate block mt-0.5">
+                            {thumbnailFile ? thumbnailFile.name : 'Custom Poster Image'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1 font-medium">
-                          <CheckCircle2 className="w-3 h-3" />
-                          Active Thumbnail Selected
-                        </span>
-                        <span className="text-[11px] text-slate-300 font-sans truncate block mt-0.5">
-                          {thumbnailFile ? thumbnailFile.name : 'Custom Poster Image'}
-                        </span>
+                      <button
+                        type="button"
+                        onClick={handleRemoveThumbnail}
+                        className="px-2.5 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30 text-xs font-mono flex items-center gap-1 transition-colors cursor-pointer flex-shrink-0"
+                        title="Remove current thumbnail poster"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                  ) : isThumbnailRemoved ? (
+                    <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ImageOff className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                        <span>No thumbnail. Native video player frame will be shown.</span>
                       </div>
                     </div>
                   ) : (

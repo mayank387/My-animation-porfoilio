@@ -483,9 +483,15 @@ export async function getProjects(includeDrafts = false) {
     console.warn('Failed to read local IndexedDB projects:', err);
   }
 
-  // 3. Only return original uploaded projects (Cloud + Local).
+  // 3. Only return original uploaded projects (Cloud + Local) sorted strictly by rank index
   // Zero fake or sample projects are injected.
   const userProjects = [...cloudProjects, ...localProjects];
+  userProjects.sort((a, b) => {
+    const orderA = typeof a.displayOrder === 'number' ? a.displayOrder : 999;
+    const orderB = typeof b.displayOrder === 'number' ? b.displayOrder : 999;
+    if (orderA !== orderB) return orderA - orderB;
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+  });
   return userProjects;
 }
 
@@ -859,6 +865,14 @@ export async function createProject(project, rawFiles = {}) {
       throw new Error(`Database error: ${error.message}`);
     }
 
+    if (data?.id) {
+      try {
+        await reorderProjectRank(data.id, safeDisplayOrder);
+      } catch (reorderErr) {
+        console.warn('Reorder after cloud create warning:', reorderErr);
+      }
+    }
+
     return data;
   }
 
@@ -896,6 +910,11 @@ export async function createProject(project, rawFiles = {}) {
   };
 
   await saveLocalProject(localProject);
+  try {
+    await reorderProjectRank(localId, safeDisplayOrder);
+  } catch (reorderErr) {
+    console.warn('Reorder after local create warning:', reorderErr);
+  }
   return localProject;
 }
 
@@ -929,8 +948,8 @@ export async function updateProject(id, project, rawFiles = {}) {
       display_order: safeDisplayOrder,
       featured: Boolean(project.featured),
       status: project.status || 'published',
-      thumbnail_url: finalThumbUrl || project.thumbnail || project.thumbnail_url,
-      video_url: finalVideoUrl || project.videoUrl || project.video_url,
+      thumbnail_url: finalThumbUrl || '',
+      video_url: finalVideoUrl || project.videoUrl || project.video_url || '',
       tagline: project.tagline || project.description || '',
       concept: project.concept || project.description || '',
       tools: Array.isArray(project.tools)
@@ -972,6 +991,14 @@ export async function updateProject(id, project, rawFiles = {}) {
       throw new Error(`Database error: ${error.message}`);
     }
 
+    if (project.displayOrder || project.display_order) {
+      try {
+        await reorderProjectRank(id, safeDisplayOrder);
+      } catch (reorderErr) {
+        console.warn('Reorder after cloud update warning:', reorderErr);
+      }
+    }
+
     return data;
   }
 
@@ -997,65 +1024,101 @@ export async function updateProject(id, project, rawFiles = {}) {
     id,
     displayOrder: safeDisplayOrder,
     videoUrl: updatedVideoUrl,
-    thumbnail: updatedThumbUrl,
+    thumbnail: updatedThumbUrl || '',
     status: project.status || 'published',
     updatedAt: new Date().toISOString()
   };
 
   await saveLocalProject(updatedRecord);
+  if (project.displayOrder || project.display_order) {
+    try {
+      await reorderProjectRank(id, safeDisplayOrder);
+    } catch (reorderErr) {
+      console.warn('Reorder after local update warning:', reorderErr);
+    }
+  }
   return updatedRecord;
 }
 
 /**
- * Fast Update for Video Display Order (Cloud Supabase + Local IndexedDB)
- * Allows instantly setting project order (e.g. Video C = 1, Video A = 2).
+ * Sequential Re-ranking for Video Gallery Positioning
+ * Guaranteed: Whatever rank (1, 2, 3...) is given to a video, the video is placed
+ * at that exact position of rank, and all other videos shift sequentially without collision or ties.
  */
-export async function updateProjectDisplayOrder(id, newOrder) {
-  const safeOrder = Math.max(1, parseInt(newOrder, 10) || 1);
+export async function reorderProjectRank(projectId, targetRank) {
+  const safeTarget = Math.max(1, parseInt(targetRank, 10) || 1);
 
-  if (supabase && !String(id).startsWith('local-')) {
-    const { error } = await supabase
-      .from('projects')
-      .update({ display_order: safeOrder })
-      .eq('id', id);
+  // 1. Fetch all current projects (including drafts)
+  const allProjects = await getProjects(true);
+  if (!allProjects || allProjects.length === 0) return true;
 
-    if (error) {
-      if (error.code === '42703' || error.message?.includes('display_order')) {
-        console.warn('Cannot update display_order because column does not exist yet in Supabase. Please run the SQL migration script.');
-        return false;
+  // 2. Sort projects by existing rank order
+  const sorted = [...allProjects].sort((a, b) => {
+    const oA = typeof a.displayOrder === 'number' ? a.displayOrder : 999;
+    const oB = typeof b.displayOrder === 'number' ? b.displayOrder : 999;
+    if (oA !== oB) return oA - oB;
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+  });
+
+  // 3. Find the project to re-rank
+  const curIdx = sorted.findIndex(p => String(p.id) === String(projectId));
+  if (curIdx === -1) return false;
+
+  // 4. Remove project and insert at target rank position (clamped 0 to length)
+  const [targetItem] = sorted.splice(curIdx, 1);
+  const insertIdx = Math.min(Math.max(0, safeTarget - 1), sorted.length);
+  sorted.splice(insertIdx, 0, targetItem);
+
+  // 5. Update every project to have sequential, collision-free ranks 1, 2, 3...
+  for (let i = 0; i < sorted.length; i++) {
+    const item = sorted[i];
+    const newRank = i + 1;
+    const oldRank = item.displayOrder;
+    item.displayOrder = newRank;
+
+    // Update in Cloud Supabase if rank changed or this is the target project
+    if (newRank !== oldRank || String(item.id) === String(projectId)) {
+      if (supabase && item.isCloud && !String(item.id).startsWith('local-')) {
+        try {
+          await supabase
+            .from('projects')
+            .update({ display_order: newRank })
+            .eq('id', item.id);
+        } catch (err) {
+          console.warn(`Supabase display_order update warning for ${item.id}:`, err);
+        }
       }
-      throw new Error(`Failed to update display index: ${error.message}`);
+
+      // Also persist to local IndexedDB
+      try {
+        const db = await openLocalDatabase();
+        if (db) {
+          const tx = db.transaction(STORE_PROJECTS, 'readwrite');
+          const store = tx.objectStore(STORE_PROJECTS);
+          const req = store.get(item.id);
+          req.onsuccess = () => {
+            if (req.result) {
+              req.result.displayOrder = newRank;
+              req.result.updatedAt = new Date().toISOString();
+              store.put(req.result);
+            }
+          };
+        }
+      } catch (e) {
+        // ignore local error
+      }
     }
-    return true;
   }
 
-  // Local IndexedDB update
-  const db = await openLocalDatabase();
-  if (!db) return false;
+  return true;
+}
 
-  return new Promise((resolve, reject) => {
-    try {
-      const tx = db.transaction(STORE_PROJECTS, 'readwrite');
-      const store = tx.objectStore(STORE_PROJECTS);
-      const req = store.get(id);
-
-      req.onsuccess = () => {
-        const item = req.result;
-        if (item) {
-          item.displayOrder = safeOrder;
-          item.updatedAt = new Date().toISOString();
-          store.put(item);
-          resolve(true);
-        } else {
-          resolve(false);
-        }
-      };
-
-      req.onerror = () => reject(req.error);
-    } catch (e) {
-      reject(e);
-    }
-  });
+/**
+ * Fast Update for Video Display Order (Cloud Supabase + Local IndexedDB)
+ * Delegates to reorderProjectRank to guarantee true sequential gallery positioning.
+ */
+export async function updateProjectDisplayOrder(id, newOrder) {
+  return reorderProjectRank(id, newOrder);
 }
 
 /**

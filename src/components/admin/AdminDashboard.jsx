@@ -5,13 +5,13 @@ import {
   ArrowLeft, Film, Database, CheckCircle2, AlertTriangle, 
   Eye, RefreshCw, Sparkles, BookOpen, Clock, X, Play,
   SlidersHorizontal, Check, ShieldCheck, HelpCircle, 
-  FileText, Globe, Layers, UploadCloud
+  FileText, Globe, Layers, UploadCloud, ImageOff, ChevronUp, ChevronDown
 } from 'lucide-react';
 import { 
   getProjects, createProject, updateProject, deleteProject, 
   getIntroVideo, saveIntroVideo, deleteIntroVideo,
   uploadMedia,
-  updateProjectDisplayOrder, signOutAdmin, isSupabaseConfigured,
+  updateProjectDisplayOrder, reorderProjectRank, signOutAdmin, isSupabaseConfigured,
   resolvePlayableUrl, supabase
 } from '../../lib/supabase';
 import { convertImageToWebP } from '../../utils/imageOptimization';
@@ -188,19 +188,38 @@ export default function AdminDashboard({ user, onBackToPortfolio, onLogout, onPr
     }
   };
 
-  // Instant display index re-ordering (e.g. change Video C from 3 to 1)
+  // Instant true rank re-ordering: guarantees project is placed at target rank position
   const handleQuickUpdateOrder = async (project, newOrder) => {
     const safe = Math.max(1, parseInt(newOrder, 10) || 1);
     if (safe === project.displayOrder) return;
     try {
-      await updateProjectDisplayOrder(project.id, safe);
-      showToast(`"${project.title}" order updated to Index #${safe}`);
+      await reorderProjectRank(project.id, safe);
+      showToast(`"${project.title}" placed at Rank #${safe}`);
       await loadProjects();
       if (typeof onProjectsUpdated === 'function') {
         onProjectsUpdated();
       }
     } catch (err) {
-      alert(`Could not update display index: ${err.message}`);
+      alert(`Could not update display rank: ${err.message}`);
+    }
+  };
+
+  // Quick remove thumbnail poster from video project
+  const handleRemoveProjectThumbnail = async (project) => {
+    if (!window.confirm(`Remove thumbnail poster for "${project.title}"? The video will display its native video player frame.`)) {
+      return;
+    }
+    try {
+      await updateProject(project.id, {
+        ...project,
+        thumbnail: '',
+        thumbnail_url: ''
+      });
+      showToast(`Thumbnail removed for "${project.title}".`);
+      await loadProjects();
+      if (typeof onProjectsUpdated === 'function') onProjectsUpdated();
+    } catch (err) {
+      alert(`Could not remove thumbnail: ${err.message}`);
     }
   };
 
@@ -678,8 +697,9 @@ export default function AdminDashboard({ user, onBackToPortfolio, onLogout, onPr
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-white/5">
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-white/5 text-slate-500">
                             <Film className="w-6 h-6 text-electric-blue/40" />
+                            <span className="text-[9px] font-mono mt-0.5 text-slate-500">No poster</span>
                           </div>
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
@@ -693,14 +713,15 @@ export default function AdminDashboard({ user, onBackToPortfolio, onLogout, onPr
                       {/* Title & Metadata */}
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
-                          {/* Manual Display Index Order Pill + Quick Stepper */}
-                          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-electric-indigo/15 border border-electric-indigo/30 text-electric-blue text-[10px] font-mono">
-                            <span className="text-slate-400">Index:</span>
-                            <span className="font-bold text-white">#{p.displayOrder ?? 1}</span>
+                          {/* Manual Gallery Rank Order Pill + Up/Down Quick Stepper */}
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-electric-indigo/15 border border-electric-indigo/30 text-electric-blue text-[11px] font-mono shadow-sm">
+                            <span className="text-slate-300 font-semibold">Rank:</span>
+                            <span className="font-bold text-white text-xs">#{p.displayOrder ?? 1}</span>
                             <div className="flex items-center ml-1 border-l border-white/10 pl-1.5 gap-1">
                               <input
                                 type="number"
                                 min="1"
+                                max={projects.length}
                                 step="1"
                                 defaultValue={p.displayOrder ?? 1}
                                 key={`${p.id}-${p.displayOrder}`}
@@ -710,9 +731,35 @@ export default function AdminDashboard({ user, onBackToPortfolio, onLogout, onPr
                                     e.currentTarget.blur();
                                   }
                                 }}
-                                title="Change index to reorder in gallery. Press Enter or click away to save."
-                                className="w-10 text-center bg-black/60 border border-white/20 rounded px-1 py-0.2 text-[10px] font-mono text-cyan-300 font-bold focus:outline-none focus:border-electric-blue"
+                                title="Set exact gallery rank. Press Enter or click away to place video."
+                                className="w-10 text-center bg-black/70 border border-white/20 rounded px-1 py-0.5 text-xs font-mono text-cyan-300 font-bold focus:outline-none focus:border-cyan-400"
                               />
+                              <div className="flex flex-col ml-0.5">
+                                <button
+                                  type="button"
+                                  disabled={(p.displayOrder ?? 1) <= 1}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleQuickUpdateOrder(p, (p.displayOrder ?? 1) - 1);
+                                  }}
+                                  className="p-0.5 hover:text-white text-slate-400 disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed leading-none"
+                                  title="Move Up 1 Rank"
+                                >
+                                  <ChevronUp className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={(p.displayOrder ?? 1) >= projects.length}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleQuickUpdateOrder(p, (p.displayOrder ?? 1) + 1);
+                                  }}
+                                  className="p-0.5 hover:text-white text-slate-400 disabled:opacity-20 cursor-pointer disabled:cursor-not-allowed leading-none"
+                                  title="Move Down 1 Rank"
+                                >
+                                  <ChevronDown className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
                             </div>
                           </div>
 
@@ -763,8 +810,21 @@ export default function AdminDashboard({ user, onBackToPortfolio, onLogout, onPr
                       </div>
                     </div>
 
-                    {/* Right: Actions (Preview, Edit, Delete) */}
+                    {/* Right: Actions (Remove Thumbnail, Preview, Edit, Delete) */}
                     <div className="flex items-center gap-2 self-end md:self-center flex-shrink-0">
+                      {/* Remove Thumbnail Button */}
+                      {p.thumbnail && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveProjectThumbnail(p)}
+                          className="px-2.5 py-2 rounded-xl bg-white/[0.04] hover:bg-red-500/15 text-slate-300 hover:text-red-300 border border-white/10 hover:border-red-500/30 text-xs font-mono transition-colors flex items-center gap-1.5 cursor-pointer"
+                          title="Remove thumbnail poster from this video"
+                        >
+                          <ImageOff className="w-3.5 h-3.5 text-amber-400" />
+                          <span className="hidden xl:inline">Remove Thumbnail</span>
+                        </button>
+                      )}
+
                       {/* Theater Preview Button */}
                       <button
                         onClick={() => setPreviewProject(p)}
@@ -810,6 +870,8 @@ export default function AdminDashboard({ user, onBackToPortfolio, onLogout, onPr
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
         onSave={handleSaveProject}
+        nextOrder={projects.length + 1}
+        totalProjects={projects.length}
       />
 
       {/* Intro Showreel Upload & Management Modal */}

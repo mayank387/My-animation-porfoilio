@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, Upload, Film, Image as ImageIcon, Sparkles, 
   RefreshCw, AlertCircle, CheckCircle2, Play, Trash2, Eye,
-  Camera, Check
+  Camera, Check, ImageOff
 } from 'lucide-react';
 import { validateUploadFile, isSupabaseConfigured } from '../../lib/supabase';
 import { convertImageToWebP, extractVideoThumbnailAsWebP } from '../../utils/imageOptimization';
@@ -27,6 +27,7 @@ export default function AdminIntroVideoModal({
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [videoError, setVideoError] = useState('');
   const [thumbError, setThumbError] = useState('');
+  const [isThumbnailRemoved, setIsThumbnailRemoved] = useState(false);
 
   const [previewVideoSrc, setPreviewVideoSrc] = useState('');
   const [previewThumbSrc, setPreviewThumbSrc] = useState('');
@@ -54,6 +55,14 @@ export default function AdminIntroVideoModal({
     objectUrlsRef.current = [];
   };
 
+  const handleRemoveThumbnail = () => {
+    setThumbnailFile(null);
+    setThumbnailUrl('');
+    setPreviewThumbSrc('');
+    setThumbError('');
+    setIsThumbnailRemoved(true);
+  };
+
   useEffect(() => {
     if (isOpen) {
       if (currentIntro) {
@@ -64,6 +73,7 @@ export default function AdminIntroVideoModal({
         setThumbnailUrl(currentIntro.thumbnail || '');
         setPreviewVideoSrc(currentIntro.videoUrl || '');
         setPreviewThumbSrc(currentIntro.thumbnail || '');
+        setIsThumbnailRemoved(!currentIntro.thumbnail && !currentIntro.thumbnailUrl);
       } else {
         setTitle('A GLIMPSE INTO MY CREATIVE WORLD.');
         setDescription('Explore my creativity through cinematic visuals, 3D animations and product advertisements.');
@@ -72,6 +82,7 @@ export default function AdminIntroVideoModal({
         setThumbnailUrl('');
         setPreviewVideoSrc('');
         setPreviewThumbSrc('');
+        setIsThumbnailRemoved(false);
       }
       setVideoFile(null);
       setThumbnailFile(null);
@@ -241,9 +252,9 @@ export default function AdminIntroVideoModal({
       return;
     }
 
-    // Auto-generate high-res WebP thumbnail from video if user has not chosen an image
-    let thumbToProcess = thumbnailFile;
-    if (!thumbToProcess && !thumbnailUrl.trim() && videoFile) {
+    // Auto-generate high-res WebP thumbnail from video ONLY if user has NOT explicitly removed it
+    let thumbToProcess = isThumbnailRemoved ? null : thumbnailFile;
+    if (!isThumbnailRemoved && !thumbToProcess && !thumbnailUrl.trim() && videoFile) {
       try {
         const autoThumb = await extractVideoThumbnailAsWebP(videoFile, 0.15);
         if (autoThumb) {
@@ -259,8 +270,8 @@ export default function AdminIntroVideoModal({
     setUploadPercent(0);
 
     try {
-      // Ensure thumbnail is converted to WebP
-      let finalThumbFile = thumbToProcess;
+      // Ensure thumbnail is converted to WebP (if not removed)
+      let finalThumbFile = isThumbnailRemoved ? null : thumbToProcess;
       if (finalThumbFile) {
         finalThumbFile = await convertImageToWebP(finalThumbFile, { quality: 0.85, maxWidth: 1920, maxHeight: 1080 });
       }
@@ -271,7 +282,7 @@ export default function AdminIntroVideoModal({
         aspectRatio,
         duration: '0:30',
         videoUrl: videoUrl.trim(),
-        thumbnail: thumbnailUrl.trim()
+        thumbnail: isThumbnailRemoved ? '' : thumbnailUrl.trim()
       };
 
       await onSave(
@@ -430,12 +441,12 @@ export default function AdminIntroVideoModal({
               </div>
 
               {/* 2. Thumbnail Poster Source */}
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2.5">
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-cyan-300 flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4" /> Custom Poster Thumbnail (JPG / PNG / WebP)
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">Max 25 MB</span>
+                  <span className="text-[10px] font-mono text-slate-400">Optional</span>
                 </div>
 
                 {thumbError && (
@@ -445,13 +456,58 @@ export default function AdminIntroVideoModal({
                   </div>
                 )}
 
+                {/* Active Thumbnail Badge with Remove Button */}
+                {(previewThumbSrc || thumbnailFile || thumbnailUrl) && !isThumbnailRemoved ? (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-16 aspect-video rounded-lg overflow-hidden bg-black border border-white/10 flex-shrink-0">
+                        <img src={previewThumbSrc} alt="Selected thumbnail" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-mono text-cyan-300 block truncate">
+                          {thumbnailFile ? thumbnailFile.name : (thumbnailUrl ? 'Custom Image URL' : 'Active Thumbnail Poster')}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 mt-0.5">
+                          ✓ Active Poster Loaded
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveThumbnail}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-300 hover:text-red-200 border border-red-500/30 text-xs font-mono flex items-center gap-1.5 transition-colors cursor-pointer flex-shrink-0"
+                      title="Remove current thumbnail poster"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                      <span>Remove Thumbnail</span>
+                    </button>
+                  </div>
+                ) : isThumbnailRemoved ? (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ImageOff className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                      <span>Thumbnail removed. Showreel will display its native video player frame.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsThumbnailRemoved(false);
+                        if (videoFile) generateThumbnailFromVideo(videoFile);
+                      }}
+                      className="text-[11px] font-mono text-cyan-400 hover:underline cursor-pointer"
+                    >
+                      Undo / Restore
+                    </button>
+                  </div>
+                ) : null}
+
                 <div className="flex flex-col sm:flex-row gap-3">
                   <label className="flex-1 cursor-pointer p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-dashed border-white/15 hover:border-cyan-400 text-center transition-all group">
                     <Upload className="w-4 h-4 mx-auto text-slate-400 group-hover:text-cyan-300 mb-1 transition-colors" />
                     <span className="text-[11px] font-mono text-slate-200 block truncate">
-                      {thumbnailFile ? thumbnailFile.name : 'Choose Poster Image from Computer'}
+                      {thumbnailFile && !isThumbnailRemoved ? thumbnailFile.name : 'Choose Poster Image from Computer'}
                     </span>
-                    {thumbnailFile && (
+                    {thumbnailFile && !isThumbnailRemoved && (
                       <span className="text-[10px] font-mono text-emerald-400 block mt-0.5">
                         ✓ {formatBytes(thumbnailFile.size)} selected
                       </span>
@@ -459,7 +515,10 @@ export default function AdminIntroVideoModal({
                     <input
                       type="file"
                       accept="image/png,image/jpeg,image/webp,image/gif"
-                      onChange={handleThumbChange}
+                      onChange={(e) => {
+                        setIsThumbnailRemoved(false);
+                        handleThumbChange(e);
+                      }}
                       className="hidden"
                     />
                   </label>
@@ -468,8 +527,9 @@ export default function AdminIntroVideoModal({
                     <input
                       type="url"
                       placeholder="Or paste poster image URL"
-                      value={thumbnailUrl}
+                      value={isThumbnailRemoved ? '' : thumbnailUrl}
                       onChange={(e) => {
+                        setIsThumbnailRemoved(false);
                         setThumbnailUrl(e.target.value);
                         setPreviewThumbSrc(e.target.value);
                       }}
@@ -481,7 +541,10 @@ export default function AdminIntroVideoModal({
                 {videoFile && (
                   <button
                     type="button"
-                    onClick={() => generateThumbnailFromVideo(videoFile)}
+                    onClick={() => {
+                      setIsThumbnailRemoved(false);
+                      generateThumbnailFromVideo(videoFile);
+                    }}
                     className="w-full py-2 px-3 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-cyan-500/20 text-cyan-300 hover:text-cyan-200 text-xs font-mono flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
                     <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
