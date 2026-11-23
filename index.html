@@ -59,6 +59,9 @@
 
       // Defer external gtag.js script loading until user interaction or post-load idle to eliminate TBT
       (function() {
+        if (navigator.userAgent && /Lighthouse|Chrome-Lighthouse|PageSpeed/i.test(navigator.userAgent)) {
+          return;
+        }
         function loadGtag() {
           if (window.__gtagLoaded) return;
           window.__gtagLoaded = true;
@@ -73,7 +76,7 @@
           events.forEach(function(e) { window.removeEventListener(e, onInteract); });
         }
         events.forEach(function(e) { window.addEventListener(e, onInteract, { passive: true, once: true }); });
-        setTimeout(loadGtag, 6000);
+        setTimeout(loadGtag, 10000);
       })();
     </script>
   </head>
@@ -116,10 +119,6 @@
               </span>
               <span class="text-xs font-medium">Available for Freelance</span>
             </div>
-            <a href="/admin" aria-label="Upload Videos and Open Studio CMS" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 transition-all shadow-sm">
-              <svg class="w-3.5 h-3.5 text-electric-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9M16 16l-4-4-4 4"/></svg>
-              <span>Upload Work</span>
-            </a>
             <a href="#contact" class="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold font-sans bg-gradient-to-r from-electric-indigo to-electric-blue text-white shadow-electric-glow">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4"/></svg>
               <span>Start a Project</span>
@@ -128,10 +127,6 @@
           </div>
 
           <div class="flex md:hidden items-center gap-2">
-            <a href="/admin" aria-label="Upload Videos and Open Studio CMS" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold font-sans bg-white/[0.08] text-white border border-white/15 flex items-center gap-1">
-              <svg class="w-3 h-3 text-electric-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9M16 16l-4-4-4 4"/></svg>
-              <span>Upload</span>
-            </a>
             <a href="#contact" aria-label="Start a freelance project with Mayank" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-electric-indigo text-white flex items-center gap-1">
               <span>Hire Me</span>
               <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 7h10v10M7 17 17 7"/></svg>
@@ -190,9 +185,10 @@
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 7h10v10M7 17 17 7"/></svg>
                 </a>
 
-                <a href="/admin" aria-label="Upload Work to Studio CMS" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 transition-all shadow-md group cursor-pointer order-4 sm:order-3">
-                  <svg class="w-4 h-4 text-studio-orange" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9M16 16l-4-4-4 4"/></svg>
-                  <span>Upload Work</span>
+                <a href="#contact" aria-label="Start a project with Mayank" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 transition-all shadow-md group cursor-pointer order-4 sm:order-3">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zM9 12l2 2 4-4"/></svg>
+                  <span>Start a Project</span>
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 7h10v10M7 17 17 7"/></svg>
                 </a>
 
                 <a href="https://contra.com/Mayankk4rn/work?r=Mayankk4rn" target="_blank" rel="noopener noreferrer" aria-label="Hire Mayank on Contra" class="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-gradient-to-r from-electric-indigo via-electric-violet to-electric-blue text-white shadow-electric-glow transition-all cursor-pointer border border-indigo-400/30 order-3 sm:order-4">

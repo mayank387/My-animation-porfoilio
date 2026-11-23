@@ -14,7 +14,8 @@ export default function Hero({
   introVideo, 
   onOpenAdminUpload, 
   onOpenFeaturedProject, 
-  featuredProject 
+  featuredProject,
+  isAdmin = false
 }) {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
@@ -39,10 +40,10 @@ export default function Hero({
     if (!isDesktop) return;
 
     if ('requestIdleCallback' in window) {
-      const handle = window.requestIdleCallback(() => setLoad3D(true), { timeout: 2500 });
+      const handle = window.requestIdleCallback(() => setLoad3D(true), { timeout: 4000 });
       return () => window.cancelIdleCallback(handle);
     } else {
-      const timer = setTimeout(() => setLoad3D(true), 1200);
+      const timer = setTimeout(() => setLoad3D(true), 3000);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -266,17 +267,29 @@ export default function Hero({
                 <ArrowUpRight className="w-4 h-4" />
               </a>
 
-              {/* CTA 3: Upload Work / Studio CMS */}
-              <button
-                type="button"
-                onClick={onOpenAdminUpload}
-                aria-label="Upload Work to Studio CMS"
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-orange-500/40 backdrop-blur-md transition-all shadow-md group cursor-pointer order-4 sm:order-3"
-                title="Upload Videos & Manage Portfolio"
-              >
-                <UploadCloud className="w-4 h-4 text-studio-orange group-hover:scale-110 transition-transform" />
-                <span>Upload Work</span>
-              </button>
+              {/* CTA 3: Upload Work (Visible only on owner's admin account) or Start a Project (Public Visitors) */}
+              {isAdmin ? (
+                <button
+                  type="button"
+                  onClick={onOpenAdminUpload}
+                  aria-label="Upload Work to Studio CMS"
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-orange-500/40 backdrop-blur-md transition-all shadow-md group cursor-pointer order-4 sm:order-3"
+                  title="Upload Videos & Manage Portfolio"
+                >
+                  <UploadCloud className="w-4 h-4 text-studio-orange group-hover:scale-110 transition-transform" />
+                  <span>Upload Work</span>
+                </button>
+              ) : (
+                <a
+                  href="#contact"
+                  aria-label="Start a freelance project with Mayank"
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-emerald-500/40 backdrop-blur-md transition-all shadow-md group cursor-pointer order-4 sm:order-3"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span>Start a Project</span>
+                  <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </a>
+              )}
 
               {/* CTA 4: Hire me on contra (Positioned directly below Hire me on Behance) */}
               <a
@@ -372,16 +385,19 @@ export default function Hero({
                 </span>
 
                 <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={onOpenAdminUpload}
-                    className="pointer-events-auto px-3 py-1.5 rounded-full text-xs font-mono font-medium tracking-wide bg-black/80 hover:bg-electric-indigo text-white border border-white/15 backdrop-blur-md transition-colors flex items-center gap-1.5 cursor-pointer shadow-lg"
-                    title="Upload or Change Intro Showreel"
-                    aria-label="Manage Intro Showreel"
-                  >
-                    <UploadCloud className="w-3.5 h-3.5 text-electric-blue" />
-                    <span className="hidden sm:inline">Manage Showreel</span>
-                  </button>
+                  {/* Manage Showreel Button (Visible only on owner's admin account) */}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={onOpenAdminUpload}
+                      className="pointer-events-auto px-3 py-1.5 rounded-full text-xs font-mono font-medium tracking-wide bg-black/80 hover:bg-electric-indigo text-white border border-white/15 backdrop-blur-md transition-colors flex items-center gap-1.5 cursor-pointer shadow-lg"
+                      title="Upload or Change Intro Showreel"
+                      aria-label="Manage Intro Showreel"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5 text-electric-blue" />
+                      <span className="hidden sm:inline">Manage Showreel</span>
+                    </button>
+                  )}
 
                   <button
                     type="button"

@@ -50,7 +50,7 @@ export const siteConfig = {
   stats: [
     { label: "Pipeline", value: "AI + 3D Hybrid" },
     { label: "Turnaround", value: "3 to 10 Days" },
-    { label: "Resolution", value: "4K Cinema / 60 FPS" },
+    { label: "Resolution", value: "1080p Cinema / 60 FPS" },
     { label: "Availability", value: "Worldwide / Open" },
   ],
 

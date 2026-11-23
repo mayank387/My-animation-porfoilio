@@ -123,25 +123,23 @@ export default function VideoCard({ project, onSelect }) {
               } ${isPlaying ? 'opacity-0' : 'opacity-100'}`}
             />
           </div>
-        ) : project.videoUrl ? (
-          <div className={`w-full h-full flex items-center justify-center relative z-[2] bg-black ${isVertical ? 'py-2' : ''}`}>
-            <video
-              src={`${project.videoUrl}#t=0.001`}
-              preload="metadata"
-              muted
-              playsInline
-              className={`w-full h-full object-cover ${
-                isVertical 
-                  ? 'h-full aspect-[9/16] object-cover rounded-xl shadow-[0_0_40px_rgba(99,102,241,0.25),0_15px_30px_rgba(0,0,0,0.8)] border border-white/15' 
-                  : 'w-full h-full object-cover'
-              }`}
-            />
-          </div>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-studio-card via-studio-surface to-black flex items-center justify-center p-6 text-center">
-            <div className="space-y-2">
-              <Film className="w-8 h-8 text-electric-blue/40 mx-auto" />
-              <span className="text-xs font-sans text-slate-500 block truncate">{project.title}</span>
+          <div className={`w-full h-full flex items-center justify-center relative z-[2] bg-gradient-to-br from-[#12131d] via-studio-surface to-black ${isVertical ? 'py-2' : ''}`}>
+            <div className={`w-full h-full flex flex-col items-center justify-center p-6 text-center relative overflow-hidden transition-transform duration-500 group-hover:scale-105 ${
+              isVertical ? 'aspect-[9/16] rounded-xl border border-white/15 bg-black/60 shadow-[0_0_40px_rgba(99,102,241,0.2)]' : ''
+            }`}>
+              {/* Ambient Studio Lighting Backdrop */}
+              <div className="absolute inset-0 bg-radial-glow opacity-25 pointer-events-none" />
+              
+              <div className="space-y-3 relative z-10 flex flex-col items-center">
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.06] border border-white/10 flex items-center justify-center text-electric-blue shadow-xl group-hover:scale-110 group-hover:border-electric-blue/40 group-hover:bg-electric-indigo/20 transition-all duration-300">
+                  <Film className="w-6 h-6 text-electric-blue" />
+                </div>
+                <div className="space-y-1 max-w-[220px]">
+                  <span className="text-xs font-sans font-semibold text-white block truncate tracking-wide">{project.title}</span>
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block">Cinematic Reel</span>
+                </div>
+              </div>
             </div>
           </div>
         )}

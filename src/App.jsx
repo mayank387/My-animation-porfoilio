@@ -72,21 +72,19 @@ export default function App() {
       const sessionUser = await getAdminSession();
       if (sessionUser) {
         setAdminUser(sessionUser);
+      } else {
+        setAdminUser(null);
       }
     } catch (err) {
       console.warn('Session check failed:', err);
+      setAdminUser(null);
     }
   }, []);
 
-  // Mount initialization: Load public portfolio data
+  // Mount initialization: Load public portfolio data and restore admin session if logged in
   useEffect(() => {
     loadPublicProjects();
     loadIntroShowreel();
-  }, [loadPublicProjects, loadIntroShowreel]);
-
-  // Admin Auth: Only check and listen when visiting /admin
-  useEffect(() => {
-    if (!isAdminView) return;
     checkAdminAuth();
 
     let authSubscription = null;
@@ -104,7 +102,7 @@ export default function App() {
     return () => {
       authSubscription?.unsubscribe();
     };
-  }, [isAdminView, checkAdminAuth]);
+  }, [loadPublicProjects, loadIntroShowreel, checkAdminAuth]);
 
   // GA4 Analytics Initialization & Traffic Source Detection
   useEffect(() => {
@@ -177,7 +175,13 @@ export default function App() {
     window.history.pushState(null, '', '/admin');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const { signOutAdmin } = await import('./lib/supabase');
+      await signOutAdmin();
+    } catch (err) {
+      console.warn('Sign out error:', err);
+    }
     setAdminUser(null);
     handleBackToPortfolio();
   };
@@ -240,11 +244,12 @@ export default function App() {
       <div className="fixed inset-0 pointer-events-none film-grain z-50 opacity-40" />
 
       {/* Navigation */}
-      <Navbar onOpenAdmin={navigateToAdmin} />
+      <Navbar isAdmin={Boolean(adminUser)} onOpenAdmin={navigateToAdmin} />
 
       {/* Main Content Sections */}
       <main>
         <Hero 
+          isAdmin={Boolean(adminUser)}
           introVideo={introVideo}
           onOpenAdminUpload={navigateToAdmin}
           onOpenFeaturedProject={handleOpenFeaturedReel} 
@@ -252,6 +257,7 @@ export default function App() {
         />
         <Suspense fallback={<div className="min-h-[400px]" />}>
           <Showcase 
+            isAdmin={Boolean(adminUser)}
             projects={projectsList} 
             onSelectProject={handleSelectProject} 
             onOpenAdmin={navigateToAdmin}
@@ -264,22 +270,24 @@ export default function App() {
         </Suspense>
       </main>
 
-      {/* Floating Quick Upload / Studio CMS Button */}
-      <button
-        type="button"
-        onClick={navigateToAdmin}
-        className="fixed bottom-6 right-6 z-40 px-4 py-2.5 rounded-full bg-studio-surface/90 hover:bg-electric-indigo border border-white/15 hover:border-transparent text-white text-xs font-sans font-semibold backdrop-blur-xl shadow-2xl transition-all duration-300 flex items-center gap-2 group transform hover:-translate-y-1 cursor-pointer"
-        title="Open Admin Upload & Studio CMS (Shortcut: Ctrl + Shift + A)"
-        aria-label="Open Admin Upload and Studio CMS"
-      >
-        <UploadCloud className="w-4 h-4 text-electric-blue group-hover:text-white transition-colors" />
-        <span className="hidden sm:inline">Upload / Studio CMS</span>
-        <span className="text-[10px] font-mono text-slate-400 group-hover:text-white/80 bg-white/10 px-1.5 py-0.5 rounded">Admin</span>
-      </button>
+      {/* Floating Quick Upload / Studio CMS Button (Visible only on owner's admin account) */}
+      {Boolean(adminUser) && (
+        <button
+          type="button"
+          onClick={navigateToAdmin}
+          className="fixed bottom-6 right-6 z-40 px-4 py-2.5 rounded-full bg-studio-surface/90 hover:bg-electric-indigo border border-white/15 hover:border-transparent text-white text-xs font-sans font-semibold backdrop-blur-xl shadow-2xl transition-all duration-300 flex items-center gap-2 group transform hover:-translate-y-1 cursor-pointer"
+          title="Open Admin Upload & Studio CMS (Shortcut: Ctrl + Shift + A)"
+          aria-label="Open Admin Upload and Studio CMS"
+        >
+          <UploadCloud className="w-4 h-4 text-electric-blue group-hover:text-white transition-colors" />
+          <span className="hidden sm:inline">Upload / Studio CMS</span>
+          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">Admin</span>
+        </button>
+      )}
 
       {/* Footer (Lazy Loaded) */}
       <Suspense fallback={null}>
-        <Footer onOpenAdmin={navigateToAdmin} />
+        <Footer isAdmin={Boolean(adminUser)} onOpenAdmin={navigateToAdmin} />
       </Suspense>
 
       {/* Theater Video Modal with Playlist Navigation & Full Controls (Lazy loaded on demand) */}

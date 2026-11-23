@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { siteConfig } from '../../data/siteConfig';
 
-export default function Footer({ onOpenAdmin }) {
+export default function Footer({ onOpenAdmin, isAdmin = false }) {
   const [copied, setCopied] = useState(false);
 
   const copyEmail = () => {
@@ -197,16 +197,16 @@ export default function Footer({ onOpenAdmin }) {
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center sm:justify-end">
             <span>Client Contracts via Milestone Escrow</span>
             <span>•</span>
-            <span className="text-slate-300">4K Master Delivery</span>
+            <span className="text-slate-300">1080p Master Delivery</span>
             <span>•</span>
             <button
               type="button"
               onClick={onOpenAdmin || (() => { window.location.pathname = '/admin'; })}
               aria-label="Open Admin and Studio CMS Portal"
-              className="text-slate-400 hover:text-electric-blue transition-colors flex items-center gap-1 cursor-pointer font-medium"
+              className="text-slate-500 hover:text-electric-blue transition-colors flex items-center gap-1 cursor-pointer font-medium"
               title="Admin Portal (or press Ctrl + Shift + A)"
             >
-              <span>Admin</span>
+              <span>{isAdmin ? 'Studio CMS' : 'Admin'}</span>
             </button>
           </div>
         </div>

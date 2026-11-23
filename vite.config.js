@@ -10,6 +10,11 @@ export default defineConfig({
   },
   build: {
     chunkSizeWarningLimit: 900,
+    modulePreload: {
+      resolveDependencies(filename, deps) {
+        return deps.filter(dep => !dep.includes('three') && !dep.includes('Admin') && !dep.includes('admin'));
+      }
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {

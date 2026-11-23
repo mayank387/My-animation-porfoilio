@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowUpRight, ShieldCheck, Film, UploadCloud } from 'lucide-react';
 
-export default function Navbar({ onOpenAdmin }) {
+export default function Navbar({ onOpenAdmin, isAdmin = false }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -74,17 +74,19 @@ export default function Navbar({ onOpenAdmin }) {
             <span className="text-xs font-medium">Available for Freelance</span>
           </div>
 
-          {/* Upload / Studio CMS Button */}
-          <button
-            type="button"
-            onClick={onOpenAdmin}
-            aria-label="Upload Videos and Open Studio CMS"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-electric-indigo/50 transition-all cursor-pointer shadow-sm group"
-            title="Upload Videos & Manage Studio CMS"
-          >
-            <UploadCloud className="w-3.5 h-3.5 text-electric-blue group-hover:scale-110 transition-transform" />
-            <span>Upload Work</span>
-          </button>
+          {/* Upload / Studio CMS Button (Visible only on owner's admin account) */}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              aria-label="Upload Videos and Open Studio CMS"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold font-sans bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 hover:border-electric-indigo/50 transition-all cursor-pointer shadow-sm group"
+              title="Upload Videos & Manage Studio CMS"
+            >
+              <UploadCloud className="w-3.5 h-3.5 text-electric-blue group-hover:scale-110 transition-transform" />
+              <span>Upload Work</span>
+            </button>
+          )}
 
           {/* Direct Contact / Hire Action Button */}
           <a
@@ -99,17 +101,19 @@ export default function Navbar({ onOpenAdmin }) {
 
         {/* Mobile Hamburger Button & Quick Actions */}
         <div className="flex md:hidden items-center gap-2">
-          {/* Mobile Upload Button */}
-          <button
-            type="button"
-            onClick={onOpenAdmin}
-            aria-label="Upload Videos and Open Studio CMS"
-            className="px-2.5 py-1.5 rounded-lg text-xs font-semibold font-sans bg-white/[0.08] hover:bg-white/[0.15] text-white border border-white/15 flex items-center gap-1 cursor-pointer"
-            title="Upload Videos"
-          >
-            <UploadCloud className="w-3 h-3 text-electric-blue" />
-            <span>Upload</span>
-          </button>
+          {/* Mobile Upload Button (Visible only on owner's admin account) */}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={onOpenAdmin}
+              aria-label="Upload Videos and Open Studio CMS"
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold font-sans bg-white/[0.08] hover:bg-white/[0.15] text-white border border-white/15 flex items-center gap-1 cursor-pointer"
+              title="Upload Videos"
+            >
+              <UploadCloud className="w-3 h-3 text-electric-blue" />
+              <span>Upload</span>
+            </button>
+          )}
 
           <a
             href="#contact"
@@ -149,18 +153,20 @@ export default function Navbar({ onOpenAdmin }) {
           </div>
 
           <div className="pt-3 border-t border-white/10 flex flex-col gap-3">
-            {/* Mobile Studio CMS Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                if (typeof onOpenAdmin === 'function') onOpenAdmin();
-              }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white font-sans font-semibold text-sm transition-colors cursor-pointer"
-            >
-              <UploadCloud className="w-4 h-4 text-electric-blue" />
-              <span>Upload Work / Studio CMS</span>
-            </button>
+            {/* Mobile Studio CMS Button (Visible only on owner's admin account) */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (typeof onOpenAdmin === 'function') onOpenAdmin();
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 text-white font-sans font-semibold text-sm transition-colors cursor-pointer"
+              >
+                <UploadCloud className="w-4 h-4 text-electric-blue" />
+                <span>Upload Work / Studio CMS</span>
+              </button>
+            )}
 
             <div className="flex items-center gap-2 text-xs font-sans font-medium text-emerald-400 px-3">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />

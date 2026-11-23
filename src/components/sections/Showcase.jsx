@@ -4,7 +4,7 @@ import { Film, Sparkles, ArrowUpRight, ShieldCheck, UploadCloud, Clock } from 'l
 import { projectCategories } from '../../data/projects';
 import VideoCard from '../ui/VideoCard';
 
-export default function Showcase({ projects: customProjects, onSelectProject, onOpenAdmin }) {
+export default function Showcase({ projects: customProjects, onSelectProject, onOpenAdmin, isAdmin = false }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const projectList = customProjects || [];
 
@@ -106,17 +106,19 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
                 );
               })}
 
-              {/* Upload Reel Shortcut */}
-              <button
-                type="button"
-                onClick={onOpenAdmin}
-                aria-label="Upload New Reel to Portfolio"
-                className="px-4 py-2.5 rounded-xl text-xs font-sans font-semibold bg-white/[0.06] hover:bg-studio-orange text-white border border-white/10 hover:border-transparent transition-all flex items-center gap-2 cursor-pointer shadow-md group ml-auto sm:ml-0"
-                title="Upload New Reel to Portfolio"
-              >
-                <UploadCloud className="w-3.5 h-3.5 text-electric-blue group-hover:text-white transition-colors" />
-                <span>Upload Reel</span>
-              </button>
+              {/* Upload Reel Shortcut (Visible only on owner's admin account) */}
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={onOpenAdmin}
+                  aria-label="Upload New Reel to Portfolio"
+                  className="px-4 py-2.5 rounded-xl text-xs font-sans font-semibold bg-white/[0.06] hover:bg-studio-orange text-white border border-white/10 hover:border-transparent transition-all flex items-center gap-2 cursor-pointer shadow-md group ml-auto sm:ml-0"
+                  title="Upload New Reel to Portfolio"
+                >
+                  <UploadCloud className="w-3.5 h-3.5 text-electric-blue group-hover:text-white transition-colors" />
+                  <span>Upload Reel</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -155,13 +157,15 @@ export default function Showcase({ projects: customProjects, onSelectProject, on
                   <ArrowUpRight className="w-4 h-4" />
                 </a>
 
-                <a
-                  href="/admin"
-                  className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 text-xs font-semibold font-sans transition-all cursor-pointer"
-                >
-                  <UploadCloud className="w-4 h-4 text-electric-blue" />
-                  <span>Admin Upload Portal</span>
-                </a>
+                {isAdmin && (
+                  <a
+                    href="/admin"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/15 text-xs font-semibold font-sans transition-all cursor-pointer"
+                  >
+                    <UploadCloud className="w-4 h-4 text-electric-blue" />
+                    <span>Admin Upload Portal</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>
